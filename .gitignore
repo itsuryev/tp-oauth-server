@@ -1,4 +1,2 @@
 .idea
-dist/
-src/node_modules/
-src/typings/
+node_modules/

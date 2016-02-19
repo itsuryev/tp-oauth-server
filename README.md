@@ -1,14 +1,11 @@
-## Set up environment
+# OAuth 2.0 server for Targetprocess
 
-First of all, install npm.  
+## Local development
+
+Nodemon is used to start and restart server when source code changes
+
+    npm install -g nodemon
+    
 Then:
 
-    npm install -g typescript
-    npm install -g tsd
-    
-## Restore all dependencies
-
-Install required npm and typescript dependencies
-
-    cd .\src
-    .\app-init.cmd
+    npm start

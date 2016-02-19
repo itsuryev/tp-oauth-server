@@ -1,0 +1,14 @@
+{
+  "name": "tp-oauth-server",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "^4.13.4"
+  },
+  "devDependencies": {
+    "eslint": "^2.1.0"
+  },
+  "scripts": {
+    "start": "nodemon index.js"
+  }
+}
