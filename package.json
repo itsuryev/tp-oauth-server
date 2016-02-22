@@ -3,17 +3,26 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "bluebird": "^3.3.1",
     "body-parser": "^1.15.0",
     "ejs": "^2.4.1",
     "express": "^4.13.4",
-    "lodash": "^4.5.0",
+    "json-loader": "^0.5.4",
+    "lodash": "^4.5.1",
     "oauth2-server": "^2.4.1",
-    "redis": "^2.4.2"
+    "pg": "^4.4.6",
+    "progress-bar-webpack-plugin": "^1.3.0",
+    "redis": "^2.4.2",
+    "ts-loader": "^0.8.1",
+    "typescript": "^1.7.5",
+    "typings": "^0.6.8",
+    "webpack": "^1.12.13"
   },
   "devDependencies": {
-    "eslint": "^2.1.0"
+    "eslint": "^2.1.0",
+    "nodemon": "^1.9.0"
   },
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node config/run-dev.js"
   }
 }

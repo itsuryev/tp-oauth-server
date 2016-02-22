@@ -1,6 +1,8 @@
-var _ = require('lodash');
+import _ = require('lodash');
+import Result from '../result';
+import RedirectUri from '../redirectUri';
 
-function safeTrim(s) {
+function safeTrim(s: string): string {
     if (!s) {
         return null;
     }
@@ -8,25 +10,16 @@ function safeTrim(s) {
     return _.trim(s);
 }
 
-function error(message) {
-    return {
-        error: message
-    };
-}
+const error = Result.createError;
+const value = Result.createValue;
 
-function value(x) {
-    return {
-        value: x
-    };
-}
-
-module.exports = {
-    tryGetFinalRedirectUri(storedClientRedirectUri, requestedRedirectUri) {
+export default {
+    tryGetFinalRedirectUri(storedClientRedirectUri, requestedRedirectUri): Result<RedirectUri> {
         storedClientRedirectUri = safeTrim(storedClientRedirectUri);
         requestedRedirectUri = safeTrim(requestedRedirectUri);
 
         if (!storedClientRedirectUri || !storedClientRedirectUri.length) {
-            return error('There is no stored client redirect URI');
+            return error<RedirectUri>('There is no stored client redirect URI');
         }
 
         if (!requestedRedirectUri || !requestedRedirectUri.length) {
@@ -36,7 +29,7 @@ module.exports = {
         // todo: check that requested url points to subdomain of stored url
 
         if (storedClientRedirectUri.toLowerCase() !== requestedRedirectUri.toLowerCase()) {
-            return error('Stored and requested URIs don\'t match');
+            return error<RedirectUri>('Stored and requested URIs don\'t match');
         }
 
         return value(storedClientRedirectUri);
