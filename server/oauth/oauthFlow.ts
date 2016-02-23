@@ -7,8 +7,8 @@ import ClientInfo from './clientInfo';
 import RedirectUri from '../redirectUri';
 
 interface AuthorizationRequest {
-    clientInfo: ClientInfo,
-    redirectUri: RedirectUri
+    clientInfo: ClientInfo;
+    redirectUri: RedirectUri;
 }
 
 const error = msg => Result.createError<AuthorizationRequest>(msg);

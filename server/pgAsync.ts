@@ -4,14 +4,6 @@ import Promise = require('bluebird');
 const defaultConnectionStrings = require('../config/db.private.json');
 const connectionString = process.env.POSTGRES_CONNECTION_STRING || defaultConnectionStrings.postgres;
 
-// Promise.promisifyAll(pg, {
-//    filter: function(methodName) {
-//        return methodName === "connect"
-//    },
-//    multiArgs: true
-// });
-// Promise.promisifyAll(pg);
-
 Promise.promisifyAll(pg.Client.prototype);
 Promise.promisifyAll(pg.Client);
 Promise.promisifyAll(pg.Query.prototype);

@@ -6,7 +6,7 @@ import ClientInfo from './clientInfo';
 import pgAsync from '../pgAsync';
 
 export default {
-    getClientByIdAsync(clientId: string) : Promise<ClientInfo> {
+    getClientByIdAsync(clientId: string): Promise<ClientInfo> {
         return pgAsync.doWithPgClient(client => this.clientByIdGetter(client, clientId));
     },
 

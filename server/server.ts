@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
-function renderError(res : express.Response, message : string) {
+function renderError(res: express.Response, message: string) {
     res.render('pages/oauth-error', {message});
 }
 
@@ -61,10 +61,10 @@ app.get('/oauth/authorize', (req, res, next) => {
                         });
                     }
 
-                    var nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
+                    const nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
                         next(null, true, TEST_USER);
                     });
-                    
+
                     nextMiddleware(req, res, next);
                 });
         })

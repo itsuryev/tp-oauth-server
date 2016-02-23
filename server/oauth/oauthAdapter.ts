@@ -1,6 +1,6 @@
 import oauthserver = require('oauth2-server');
 import Promise = require('bluebird');
-import {Request} from "express";
+import {Request} from 'express';
 import redisAsync from '../redisAsync';
 import ClientStorage from './clientStorage';
 import TokenStorage from './tokenStorage';
@@ -64,11 +64,9 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
                 userId: user.id,
                 accountName: user.accountName
             }))
-            .then(() => {console.log('~Saved')})
             .then(() => redisAsync.doWithRedisClient(db => db.expireatAsync(entryKey, expireAtDb)))
-            .then(() => {console.log('~Saved and expired')})
             .then(() => callback(null))
-            .catch(err => { console.error(err); callback(err);});
+            .catch(err => callback(err));
     }
 
     getClient(clientId: string, clientSecret: string, callback: oauthserver.GetClientCallback) {
@@ -118,7 +116,7 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
                 if (!existingToken) {
                     return callback(null, null);
                 }
-                
+
                 callback(null, {accessToken: existingToken.token});
             })
             .catch(err => callback(err, null));

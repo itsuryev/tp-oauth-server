@@ -1,6 +1,6 @@
 interface TokenUserInfo {
-    id: number,
-    accountName: string
+    id: number;
+    accountName: string;
 }
 
 export default TokenUserInfo;

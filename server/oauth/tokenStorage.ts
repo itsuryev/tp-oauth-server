@@ -4,9 +4,9 @@ import TokenUserInfo from './tokenUserInfo';
 import ClientStorage from './clientStorage';
 
 interface TokenInfo {
-    expires: Date,
-    user: TokenUserInfo,
-    token: string
+    expires: Date;
+    user: TokenUserInfo;
+    token: string;
 }
 
 export default {
