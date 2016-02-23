@@ -3,12 +3,8 @@ import Promise = require('bluebird');
 import {ClientInfo, RedirectUri} from './models';
 import pgAsync from '../storage/pgAsync';
 
-export default {
-    getClientByIdAsync(clientId: string): Promise<ClientInfo> {
-        return pgAsync.doWithPgClient(client => this.clientByIdGetter(client, clientId));
-    },
-
-    clientByIdGetter(pgClient: any, clientId: string): Promise<ClientInfo> {
+export default class ClientStorage {
+    static clientByIdGetter(pgClient: any, clientId: string): Promise<ClientInfo> {
         return pgClient
             .queryAsync('SELECT id, client_key, name, client_secret, redirect_uri, description from clients WHERE client_key = $1', [clientId])
             .then(result => {
@@ -27,5 +23,9 @@ export default {
                 };
                 return ret;
             });
+    }
+
+    static getClientByIdAsync(clientId: string): Promise<ClientInfo> {
+        return pgAsync.doWithPgClient(client => ClientStorage.clientByIdGetter(client, clientId));
     }
 };

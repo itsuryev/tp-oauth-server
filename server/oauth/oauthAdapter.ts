@@ -136,12 +136,4 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
             .then(() => callback(null))
             .catch(err => callback(err));
     }
-
-    saveRefreshToken(refreshToken, clientId, expires, user, callback) {
-        return callback('saveRefreshToken not implemented');
-    }
-
-    getUser(username, password, callback) {
-        return callback('getUser not implemented');
-    }
 }

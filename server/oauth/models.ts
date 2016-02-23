@@ -12,7 +12,7 @@ export class RedirectUri {
     toString(): string {
         return this._path;
     }
-};
+}
 
 export interface ClientInfo {
     id: number;
@@ -21,20 +21,20 @@ export interface ClientInfo {
     description: string;
     clientSecret: string;
     redirectUri: RedirectUri;
-};
+}
 
 export interface TokenUserInfo {
     id: number;
     accountName: string;
-};
+}
 
 export interface TokenInfo {
     expires: Date;
     user: TokenUserInfo;
     token: string;
-};
+}
 
 export interface AuthorizationRequest {
     clientInfo: ClientInfo;
     redirectUri: RedirectUri;
-};
+}
