@@ -1,3 +1,4 @@
+import _ = require('lodash');
 import {Express, Response} from 'express';
 import oauthserver = require('oauth2-server');
 import {TokenUserInfo} from '../oauth/models';
@@ -67,4 +68,27 @@ export default function init(app: Express) {
     }, (appOAuth as any).authCodeGrant((req, next) => {
         next(null, req.body.allow === 'yes', TEST_USER);
     }));
+
+    app.get('/tokens/:token', (req, res, next) => {
+        console.log('~ GET /token_info');
+        const token = req.params.token;
+        if (!_.isString(token) || !token.length) {
+            return res.status(400).send('Invalid token parameter. Should be a non-empty string.');
+        }
+
+        TokenStorage
+            .getAccessToken(token)
+            .then(tokenInfo => tokenInfo.user)
+            .then(userInfo => {
+                if (!userInfo) {
+                    return res.status(404).send('Specified token does not exist');
+                }
+
+                res.json({
+                    userId: userInfo.id,
+                    accountName: userInfo.accountName
+                });
+            })
+            .catch(err => res.status(500).send(err));
+    });
 };

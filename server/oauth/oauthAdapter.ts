@@ -10,10 +10,6 @@ function buildAuthDbCodeKey(authCode: string): string {
     return `authcodes:${authCode}`;
 }
 
-function buildAccessTokenDbKey(accessToken: string): string {
-    return `accesstokens:${accessToken}`;
-}
-
 export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel {
     getAuthCode(authCode: string, callback: oauthserver.GetAuthCodeCallback): void {
         console.log('~Enter getAuthCode', authCode);

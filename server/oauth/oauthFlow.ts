@@ -2,10 +2,7 @@ import Promise = require('bluebird');
 
 import oauthClientUtils from './clientUtils';
 import oauthClientStorage from './clientStorage';
-import Result from '../result';
 import {ClientInfo, RedirectUri, AuthorizationRequest} from './models';
-
-const error = msg => Result.createError<AuthorizationRequest>(msg);
 
 export default {
     getAuthorizationRequest(req): Promise<AuthorizationRequest> {
