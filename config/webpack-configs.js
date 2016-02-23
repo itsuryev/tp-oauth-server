@@ -48,11 +48,6 @@ const backendConfig = {
 if (process.env.NODE_ENV !== 'production') {
     backendConfig.devtool = '#eval-source-map';
     backendConfig.debug = true;
-} else {
-    backendConfig.plugins.push(
-        new webpack.optimize.DedupePlugin(),
-        new webpack.optimize.UglifyJsPlugin()
-    );
 }
 
 module.exports = {
