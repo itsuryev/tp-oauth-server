@@ -1,6 +1,6 @@
 import _ = require('lodash');
 import Result from '../result';
-import RedirectUri from '../redirectUri';
+import {RedirectUri} from './models';
 
 function safeTrim(s: string): string {
     if (!s) {

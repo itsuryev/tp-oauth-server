@@ -1,9 +1,7 @@
 import _ = require('lodash');
 import Promise = require('bluebird');
-import RedirectUri from '../redirectUri';
-import ClientInfo from './clientInfo';
-
-import pgAsync from '../pgAsync';
+import {ClientInfo, RedirectUri} from './models';
+import pgAsync from '../storage/pgAsync';
 
 export default {
     getClientByIdAsync(clientId: string): Promise<ClientInfo> {

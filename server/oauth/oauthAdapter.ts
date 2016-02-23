@@ -1,10 +1,10 @@
 import oauthserver = require('oauth2-server');
 import Promise = require('bluebird');
 import {Request} from 'express';
-import redisAsync from '../redisAsync';
+import redisAsync from '../storage/redisAsync';
 import ClientStorage from './clientStorage';
 import TokenStorage from './tokenStorage';
-import TokenUserInfo from './tokenUserInfo';
+import {TokenUserInfo} from './models';
 
 function buildAuthDbCodeKey(authCode: string): string {
     return `authcodes:${authCode}`;
