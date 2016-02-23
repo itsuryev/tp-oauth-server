@@ -24,6 +24,7 @@
     "tslint": "^3.4.0"
   },
   "scripts": {
-    "start": "node config/run-dev.js"
+    "start": "node config/run-dev.js",
+    "build": "node config/build.js"
   }
 }
