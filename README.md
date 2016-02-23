@@ -25,6 +25,8 @@ Then:
 
     npm start
 
+You can also use [Sample OAuth client](https://github.com/khmylov/tp-oauth-client) to test the integration.
+
 ## Deployment
 
 Not completed yet, but probably will use pm2 to daemonize and clusterize the application.
