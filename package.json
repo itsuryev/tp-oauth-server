@@ -16,7 +16,8 @@
     "ts-loader": "^0.8.1",
     "typescript": "^1.7.5",
     "typings": "^0.6.8",
-    "webpack": "^1.12.13"
+    "webpack": "^1.12.13",
+    "winston": "^2.1.1"
   },
   "devDependencies": {
     "eslint": "^2.1.0",

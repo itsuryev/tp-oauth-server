@@ -3,8 +3,22 @@ import bodyParser = require('body-parser');
 import ClientStorage from './oauth/clientStorage';
 import initOAuthController from './controllers/oauth';
 import UserInfoProvider from './userInfoProvider';
+import {logger, configureForDebug} from './logging';
 
+const isDevelopmentMode = process.env.NODE_ENV !== 'production';
+
+// TODO: handle oauth2-server errors
 const app = express();
+
+if (isDevelopmentMode) {
+    configureForDebug();
+
+    app.use((req, res, next) => {
+        logger.debug(`~ /${req.method} ${req.url}`);
+        next();
+    });
+}
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
@@ -20,5 +34,5 @@ initOAuthController(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`App started on port ${PORT}.`);
+    logger.info(`App started on port ${PORT}`);
 });

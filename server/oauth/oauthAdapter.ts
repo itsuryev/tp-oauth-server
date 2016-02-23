@@ -1,6 +1,7 @@
 import oauthserver = require('oauth2-server');
 import Promise = require('bluebird');
 import {Request} from 'express';
+import {logger} from '../logging';
 import redisAsync from '../storage/redisAsync';
 import ClientStorage from './clientStorage';
 import TokenStorage from './tokenStorage';
@@ -12,7 +13,7 @@ function buildAuthDbCodeKey(authCode: string): string {
 
 export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel {
     getAuthCode(authCode: string, callback: oauthserver.GetAuthCodeCallback): void {
-        console.log('~Enter getAuthCode', authCode);
+        logger.debug('Enter getAuthCode', {authCode});
 
         const entryKey = buildAuthDbCodeKey(authCode);
 
@@ -49,7 +50,8 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
     }
 
     saveAuthCode(authCode: string, clientId: string, expires: Date, user, callback: oauthserver.SaveAuthCodeCallback) {
-        console.log('~Enter saveAuthCode', authCode, clientId, expires, user);
+        logger.debug('Enter saveAuthCode', {authCode, clientId, expires, user});
+
         const entryKey = buildAuthDbCodeKey(authCode);
         const expireAtDb = Math.ceil(expires.getTime() / 1000);
         redisAsync
@@ -66,7 +68,7 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
     }
 
     getClient(clientId: string, clientSecret: string, callback: oauthserver.GetClientCallback) {
-        console.log('~Enter getClient', clientId, clientSecret);
+        logger.debug('Enter getClient', {clientId, clientSecret});
 
         ClientStorage
             .getClientByIdAsync(clientId)
@@ -89,20 +91,22 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
     }
 
     grantTypeAllowed(clientId: string, grantType: string, callback: oauthserver.GrantTypeAllowedCallback) {
-        console.log('~Enter grantTypeAllowed', clientId, grantType);
+        logger.debug('Enter grantTypeAllowed', {clientId, grantType});
         callback(false, grantType === 'authorization_code');
     }
 
     generateToken(type: string, request: Request, callback: oauthserver.GenerateTokenCallback) {
-        console.log('~Enter generateToken', type);
+        logger.debug('Enter generateToken', {type});
+
         if (type !== 'accessToken') {
+            logger.debug('generateToken: Returning because type is not supported');
             return callback(null, null);
         }
 
         const clientId: string = request.body.client_id;
         const user = request.user;
         if (!clientId || !user) {
-            console.error('Unable to retrieve clientId or user from request for possible token re-issue');
+            logger.error('Unable to retrieve clientId or user from request for possible token re-issue');
             return callback(null, null);
         }
 
@@ -110,27 +114,30 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
             .getAccessTokenForClientAndUser(clientId, user.id, user.accountName)
             .then(existingToken => {
                 if (!existingToken) {
+                    logger.debug('generateToken: There is no existing access token for specified client and user, falling back to default generation');
                     return callback(null, null);
                 }
 
-                callback(null, {accessToken: existingToken.token});
+                const accessToken = existingToken.token;
+                logger.debug('generateToken: Found existing token, reusing', {accessToken});
+                callback(null, {accessToken});
             })
             .catch(err => callback(err, null));
     }
 
     getAccessToken(bearerToken: string, callback: oauthserver.GetAccessTokenCallback) {
-        console.log('~Enter getAccessToken', bearerToken);
+        logger.debug('Enter getAccessToken', {bearerToken});
         TokenStorage
             .getAccessToken(bearerToken)
-            .then(({expires, user}) => callback(null, {
-                expires,
-                user: { id: user.id.toString() }
+            .then(token => callback(null, {
+                expires: token.expires,
+                user: { id: token.user.id.toString() }
             }))
             .catch(err => callback(err, null));
     }
 
     saveAccessToken(accessToken: string, clientId: string, expires: Date, user, callback: oauthserver.SaveAccessTokenCallback) {
-        console.log('~Enter saveAccessToken', accessToken, clientId, expires, user);
+        logger.debug('Enter saveAccessToken', {accessToken, clientId, expires, user});
         TokenStorage
             .saveAccessToken(accessToken, clientId, expires, user)
             .then(() => callback(null))

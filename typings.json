@@ -7,7 +7,8 @@
     "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#20e1eb9616922d382d918cc5a21870a9dbe255f5",
     "oauth2-server": "github:DefinitelyTyped/DefinitelyTyped/oauth2-server/oauth2-server.d.ts#44e58e094e55e70975c41942b946a91d82b3d63e",
     "redis": "github:DefinitelyTyped/DefinitelyTyped/redis/redis.d.ts#bf4e9e95314a59977d71e850508d40913b145c1d",
-    "serve-static": "github:DefinitelyTyped/DefinitelyTyped/serve-static/serve-static.d.ts#0fa4e9e61385646ea6a4cba2aef357353d2ce77f"
+    "serve-static": "github:DefinitelyTyped/DefinitelyTyped/serve-static/serve-static.d.ts#0fa4e9e61385646ea6a4cba2aef357353d2ce77f",
+    "winston": "github:DefinitelyTyped/DefinitelyTyped/winston/winston.d.ts#fd9f16f862587bde12e5254e4c1e3d21ae94f9d1"
   },
   "dependencies": {
     "bluebird": "github:typed-typings/npm-bluebird#524d5cc66654fe7c8dcbccf90faeaa70588853a0",

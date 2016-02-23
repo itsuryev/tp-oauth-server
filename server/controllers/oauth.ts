@@ -21,14 +21,12 @@ export default function init(app: Express) {
         grants: ['authorization_code'],
         accessTokenLifetime: null,
         authCodeLifetime: 300,
-        debug: true
+        debug: process.env.NODE_ENV !== 'production'
     });
 
     app.all('/oauth/access_token', appOAuth.grant());
 
     app.get('/oauth/authorize', (req, res, next) => {
-        console.log('~ GET /oauth/authorize');
-
         oauthFlow
             .getAuthorizationRequest(req)
             .then(authRequest => {
@@ -60,7 +58,6 @@ export default function init(app: Express) {
     });
 
     app.post('/oauth/authorize', (req, res, next) => {
-        console.log('~ POST /oauth/authorize');
         // todo: CSRF handling
         // todo: clickjacking
 
@@ -69,8 +66,7 @@ export default function init(app: Express) {
         next(null, req.body.allow === 'yes', TEST_USER);
     }));
 
-    app.get('/tokens/:token', (req, res, next) => {
-        console.log('~ GET /token_info');
+    app.get('/tokens/:token', (req, res) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
             return res.status(400).send('Invalid token parameter. Should be a non-empty string.');
