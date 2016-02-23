@@ -1,7 +1,8 @@
 import express = require('express');
 import bodyParser = require('body-parser');
-import ClientStorage from './oauth/clientStorage';
+import {ClientStorage} from './oauth/clientStorage';
 import initOAuthController from './controllers/oauth';
+import initClientsController from './controllers/clients';
 import UserInfoProvider from './userInfoProvider';
 import {logger} from './logging';
 
@@ -31,6 +32,7 @@ app.get('/test/:accountName', (req, res) => {
 });
 
 initOAuthController(app);
+initClientsController(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {

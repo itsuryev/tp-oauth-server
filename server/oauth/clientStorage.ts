@@ -3,7 +3,37 @@ import Promise = require('bluebird');
 import {ClientInfo, RedirectUri} from './models';
 import pgAsync from '../storage/pgAsync';
 
-export default class ClientStorage {
+export class ClientQuerySpec {
+    take: number;
+    skip: number;
+    includeSecrets: boolean;
+}
+
+export class ClientStorage {
+    static getClients(spec: ClientQuerySpec): Promise<ClientInfo[]> {
+        const take = Math.min(spec.take || 25, 100);
+        const skip = spec.skip || 0;
+        return pgAsync
+            .doWithPgClient(pgClient => pgClient.queryAsync(
+                'SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients LIMIT $1 OFFSET $2',
+                [take, skip]))
+            .then(result => _.map(
+                result.rows,
+                row => ClientStorage._buildClientInfoFromRow(row, spec.includeSecrets || false))
+            );
+    }
+
+    private static _buildClientInfoFromRow(row, includeSecrets: boolean): ClientInfo {
+        return {
+            id: row.id,
+            clientId: row.client_key,
+            name: row.name,
+            clientSecret: includeSecrets ? row.client_secret : undefined,
+            redirectUri: new RedirectUri(row.redirect_uri),
+            description: row.description
+        };
+    }
+
     static clientByIdGetter(pgClient: any, clientId: string): Promise<ClientInfo> {
         return pgClient
             .queryAsync('SELECT id, client_key, name, client_secret, redirect_uri, description from clients WHERE client_key = $1', [clientId])
@@ -12,20 +42,11 @@ export default class ClientStorage {
                     return null;
                 }
 
-                const client = result.rows[0];
-                const ret: ClientInfo = {
-                    id: client.id,
-                    clientId: client.client_key,
-                    name: client.name,
-                    clientSecret: client.client_secret,
-                    redirectUri: new RedirectUri(client.redirect_uri),
-                    description: client.description
-                };
-                return ret;
+                return ClientStorage._buildClientInfoFromRow(result.rows[0], true);
             });
     }
 
     static getClientByIdAsync(clientId: string): Promise<ClientInfo> {
         return pgAsync.doWithPgClient(client => ClientStorage.clientByIdGetter(client, clientId));
     }
-};
+}

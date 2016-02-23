@@ -2,7 +2,7 @@ import Promise = require('bluebird');
 
 import {Request} from 'express';
 import oauthClientUtils from './clientUtils';
-import oauthClientStorage from './clientStorage';
+import {ClientStorage} from './clientStorage';
 import {ClientInfo, RedirectUri, AuthorizationRequest} from './models';
 import {logger} from '../logging';
 
@@ -23,7 +23,7 @@ export default {
 
         const clientId = req.query.client_id;
 
-        return oauthClientStorage
+        return ClientStorage
             .getClientByIdAsync(clientId)
             .then(storedClientInfo => {
                 if (!storedClientInfo) {

@@ -3,7 +3,7 @@ import Promise = require('bluebird');
 import {Request} from 'express';
 import {logger} from '../logging';
 import redisAsync from '../storage/redisAsync';
-import ClientStorage from './clientStorage';
+import {ClientStorage} from './clientStorage';
 import TokenStorage from './tokenStorage';
 import {TokenUserInfo} from './models';
 

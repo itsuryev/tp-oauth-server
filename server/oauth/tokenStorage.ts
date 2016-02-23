@@ -1,7 +1,7 @@
 import Promise = require('bluebird');
 import pgAsync from '../storage/pgAsync';
 import {TokenInfo, TokenUserInfo} from './models';
-import ClientStorage from './clientStorage';
+import {ClientStorage} from './clientStorage';
 
 export default {
     getAccessTokenForClientAndUser(clientId: string, user: TokenUserInfo): Promise<TokenInfo> {
