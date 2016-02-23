@@ -4,6 +4,7 @@ import oauthserver = require('oauth2-server');
 import ClientStorage from './oauth/clientStorage';
 import OAuthModel from './oauth/oauthAdapter';
 import oauthFlow from './oauth/oauthFlow';
+import TokenUserInfo from './oauth/tokenUserInfo';
 
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
@@ -14,14 +15,16 @@ function renderError(res : express.Response, message : string) {
     res.render('pages/oauth-error', {message});
 }
 
-const TEST_USER = {
+const TEST_USER: TokenUserInfo = {
     id: 140123,
-    name: 'Andrew'
+    accountName: 'localhost'
 };
 
 app.get('/', (req, res) => {
-    const client = ClientStorage.getClientById('testApp1');
-    res.send(JSON.stringify(client));
+    ClientStorage
+        .getClientByIdAsync('testApp1')
+        .then(client => res.send(JSON.stringify(client)))
+        .catch(err => res.send(err));
 });
 
 const appOAuth = oauthserver({

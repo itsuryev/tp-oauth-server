@@ -1,40 +1,49 @@
 import Promise = require('bluebird');
-import redisAsync from '../redisAsync';
-
-function buildAccessTokenDbKey(accessToken: string): string {
-    return `accesstokens:${accessToken}`;
-}
+import pgAsync from '../pgAsync';
+import TokenUserInfo from './tokenUserInfo';
+import ClientStorage from './clientStorage';
 
 interface TokenInfo {
     expires: Date,
-    user: any
+    user: TokenUserInfo
 }
 
 export default {
     getAccessToken(bearerToken: string): Promise<TokenInfo> {
-        const key = buildAccessTokenDbKey(bearerToken);
-        return redisAsync
-            .doWithRedisClient(db => db.hgetallAsync(key))
-            .then(results => {
-                if (!results) {
+        return pgAsync
+            .doWithPgClient(client => {
+                return client.queryAsync('SELECT token, account_name, user_id from access_tokens WHERE token = $1', [bearerToken]);
+            })
+            .then(result => {
+                if (!result.rowCount) {
                     return null;
                 }
 
-                return {
-                    expires: null,
-                    user: {id: results.userId}
+                const tokenRow = result.rows[0];
+                const tokenInfo: TokenInfo = {
+                    user: { id: tokenRow, accountName: tokenRow.account_name },
+                    expires: null
                 };
+                return tokenInfo;
             });
     },
 
-    saveAccessToken(accessToken: string, clientId: string, expires: Date, user): Promise<any> {
-        const key = buildAccessTokenDbKey(accessToken);
-        return redisAsync
-            .doWithRedisClient(db => db.hmsetAsync(key, {
-                accessToken: accessToken,
-                clientId: clientId,
-                expires: null,
-                userId: user.id
-            }))
+    saveAccessToken(accessToken: string, clientId: string, expires: Date, user: TokenUserInfo): Promise<any> {
+        return pgAsync
+            .doWithPgClient(pgClient => {
+                return ClientStorage
+                    .clientByIdGetter(pgClient, clientId)
+                    .then(clientInfo => {
+                        if (!clientInfo) {
+                            return Promise.reject('Client with specified clientId does not exist');
+                        }
+
+                        return clientInfo.id;
+                    })
+                    .then(clientDbId => pgClient.queryAsync(
+                        'INSERT INTO access_tokens (token, client_id, user_id, account_name) VALUES ($1, $2, $3, $4)',
+                        [accessToken, clientDbId, user.id, user.accountName]
+                    ));
+            });
     }
 }

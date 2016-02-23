@@ -1,10 +1,13 @@
 import RedirectUri from '../redirectUri';
 
-export default class ClientInfo {
-    constructor(
-        public clientId: string,
-        public name: string,
-        public clientSecret: string,
-        public redirectUri: RedirectUri) {
-    }
-}
+interface ClientInfo {
+    id: number
+    clientId: string
+    name: string
+    description: string
+    clientSecret: string
+    redirectUri: RedirectUri
+};
+
+
+export default ClientInfo;

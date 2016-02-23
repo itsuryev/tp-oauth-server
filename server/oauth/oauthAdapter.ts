@@ -3,6 +3,7 @@ import Promise = require('bluebird');
 import redisAsync from '../redisAsync';
 import ClientStorage from './clientStorage';
 import TokenStorage from './tokenStorage';
+import TokenUserInfo from './tokenUserInfo';
 
 function buildAuthDbCodeKey(authCode: string): string {
     return `authcodes:${authCode}`;
@@ -25,10 +26,15 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
                     return null;
                 }
 
+                const user: TokenUserInfo = {
+                    id: results.userId,
+                    accountName: results.accountName
+                };
+
                 return {
                     clientId: results.clientId,
                     expires: new Date(results.expires),
-                    user: {id: results.userId }
+                    user: user
                 };
             })
             .then(authCode => {
@@ -54,7 +60,8 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
                 authCode: authCode,
                 clientId: clientId,
                 expires: expires.toISOString(),
-                userId: user.id
+                userId: user.id,
+                accountName: user.accountName
             }))
             .then(() => {console.log('~Saved')})
             .then(() => redisAsync.doWithRedisClient(db => db.expireatAsync(entryKey, expireAtDb)))
@@ -95,7 +102,10 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
         console.log('~Enter getAccessToken', bearerToken);
         TokenStorage
             .getAccessToken(bearerToken)
-            .then(x => callback(null, x))
+            .then(({expires, user}) => callback(null, {
+                expires,
+                user: { id: user.id.toString() }
+            }))
             .catch(err => callback(err, null));
     }
 

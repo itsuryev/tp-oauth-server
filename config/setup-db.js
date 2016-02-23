@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 const pg = require('pg');
 const Promise = require('bluebird');
 
@@ -9,6 +11,11 @@ Promise.promisifyAll(pg.Query.prototype);
 Promise.promisifyAll(pg.Query);
 Promise.promisifyAll(pg);
 
+const path = require('path');
+const fs = require('fs');
+const sqlScript = fs.readFileSync(path.resolve(__dirname, './setup-db.sql'), 'utf8');
+console.log(sqlScript);
+
 const defaultConnectionStrings = require('./db.private.json');
 
 const connectionString = process.env.POSTGRES_CONNECTION_STRING || defaultConnectionStrings.postgres;
@@ -17,12 +24,7 @@ pg
     .connectAsync(connectionString)
     .then(client => {
         return client
-            .queryAsync([
-                'CREATE TABLE accessTokens (',
-                '   id SERIAL PRIMARY KEY,',
-                '   token TEXT',
-                ')'
-            ].join('\n'))
+            .queryAsync(sqlScript)
             .then(res => {
                 console.log(res);
             })
