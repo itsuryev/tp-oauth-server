@@ -5,6 +5,7 @@ import ClientStorage from './oauth/clientStorage';
 import OAuthModel from './oauth/oauthAdapter';
 import oauthFlow from './oauth/oauthFlow';
 import TokenUserInfo from './oauth/tokenUserInfo';
+import TokenStorage from './oauth/tokenStorage';
 
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
@@ -36,7 +37,8 @@ const appOAuth = oauthserver({
 });
 
 app.all('/oauth/access_token', appOAuth.grant());
-app.get('/oauth/authorize', (req, res) => {
+
+app.get('/oauth/authorize', (req, res, next) => {
     console.log('~ GET /oauth/authorize');
 
     oauthFlow
@@ -44,11 +46,27 @@ app.get('/oauth/authorize', (req, res) => {
         .then(authRequest => {
             const clientInfo = authRequest.clientInfo;
 
-            res.render('pages/oauth-authorize', {
-                clientId: clientInfo.clientId,
-                clientName: clientInfo.name,
-                redirectUri: authRequest.redirectUri
-            });
+            // Try to automatically allow if user has already authorized the client before
+            // It's important to ensure that redirect_uri of request is the same as the one specified in client info,
+            // to prevent authorizing anyone who knows some client_id.
+
+            TokenStorage
+                .getAccessTokenForClientAndUser(clientInfo.clientId, TEST_USER.id, TEST_USER.accountName)
+                .then(existingToken => {
+                    if (!existingToken) {
+                        return res.render('pages/oauth-authorize', {
+                            clientId: clientInfo.clientId,
+                            clientName: clientInfo.name,
+                            redirectUri: authRequest.redirectUri
+                        });
+                    }
+
+                    var nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
+                        next(null, true, TEST_USER);
+                    });
+                    
+                    nextMiddleware(req, res, next);
+                });
         })
         .catch(err => renderError(res, err));
 });

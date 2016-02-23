@@ -5,14 +5,17 @@ import ClientStorage from './clientStorage';
 
 interface TokenInfo {
     expires: Date,
-    user: TokenUserInfo
+    user: TokenUserInfo,
+    token: string
 }
 
 export default {
-    getAccessToken(bearerToken: string): Promise<TokenInfo> {
+    getAccessTokenForClientAndUser(clientId: string, userId: number, accountName: string): Promise<TokenInfo> {
         return pgAsync
             .doWithPgClient(client => {
-                return client.queryAsync('SELECT token, account_name, user_id from access_tokens WHERE token = $1', [bearerToken]);
+                return client.queryAsync(
+                    'SELECT at.token, at.account_name, at.user_id FROM access_tokens at JOIN clients c ON at.client_id = c.id AND c.client_key = $1 AND at.user_id = $2 AND at.account_name = $3 LIMIT 1',
+                    [clientId, userId, accountName]);
             })
             .then(result => {
                 if (!result.rowCount) {
@@ -21,8 +24,29 @@ export default {
 
                 const tokenRow = result.rows[0];
                 const tokenInfo: TokenInfo = {
-                    user: { id: tokenRow, accountName: tokenRow.account_name },
-                    expires: null
+                    user: {id: tokenRow.user_id, accountName: tokenRow.account_name},
+                    expires: null,
+                    token: tokenRow.token
+                };
+                return tokenInfo;
+            });
+    },
+
+    getAccessToken(bearerToken: string): Promise<TokenInfo> {
+        return pgAsync
+            .doWithPgClient(client => {
+                return client.queryAsync('SELECT token, account_name, user_id FROM access_tokens WHERE token = $1 LIMIT 1', [bearerToken]);
+            })
+            .then(result => {
+                if (!result.rowCount) {
+                    return null;
+                }
+
+                const tokenRow = result.rows[0];
+                const tokenInfo: TokenInfo = {
+                    user: { id: tokenRow.user_id, accountName: tokenRow.account_name },
+                    expires: null,
+                    token: tokenRow.token
                 };
                 return tokenInfo;
             });

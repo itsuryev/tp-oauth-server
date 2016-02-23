@@ -1,5 +1,6 @@
 import oauthserver = require('oauth2-server');
 import Promise = require('bluebird');
+import {Request} from "express";
 import redisAsync from '../redisAsync';
 import ClientStorage from './clientStorage';
 import TokenStorage from './tokenStorage';
@@ -98,6 +99,31 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
         callback(false, grantType === 'authorization_code');
     }
 
+    generateToken(type: string, request: Request, callback: oauthserver.GenerateTokenCallback) {
+        console.log('~Enter generateToken', type);
+        if (type !== 'accessToken') {
+            return callback(null, null);
+        }
+
+        const clientId: string = request.body.client_id;
+        const user = request.user;
+        if (!clientId || !user) {
+            console.error('Unable to retrieve clientId or user from request for possible token re-issue');
+            return callback(null, null);
+        }
+
+        TokenStorage
+            .getAccessTokenForClientAndUser(clientId, user.id, user.accountName)
+            .then(existingToken => {
+                if (!existingToken) {
+                    return callback(null, null);
+                }
+                
+                callback(null, {accessToken: existingToken.token});
+            })
+            .catch(err => callback(err, null));
+    }
+
     getAccessToken(bearerToken: string, callback: oauthserver.GetAccessTokenCallback) {
         console.log('~Enter getAccessToken', bearerToken);
         TokenStorage
@@ -111,7 +137,6 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
 
     saveAccessToken(accessToken: string, clientId: string, expires: Date, user, callback: oauthserver.SaveAccessTokenCallback) {
         console.log('~Enter saveAccessToken', accessToken, clientId, expires, user);
-        const key = buildAccessTokenDbKey(accessToken);
         TokenStorage
             .saveAccessToken(accessToken, clientId, expires, user)
             .then(() => callback(null))
