@@ -1,0 +1,1 @@
+Ensures that dir exists to avoid possible issues with writing logs to non-existing directory

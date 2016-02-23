@@ -3,18 +3,16 @@ import bodyParser = require('body-parser');
 import ClientStorage from './oauth/clientStorage';
 import initOAuthController from './controllers/oauth';
 import UserInfoProvider from './userInfoProvider';
-import {logger, configureForDebug} from './logging';
+import {logger} from './logging';
 
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 
-// TODO: handle oauth2-server errors
+// TODO: handle oauth2-server errors (e.g. OAuth2Error for invalid code)
 // TODO: add typings for promisified modules?
 
 const app = express();
 
 if (isDevelopmentMode) {
-    configureForDebug();
-
     app.use((req, res, next) => {
         logger.debug(`~ ${req.method} ${req.url}`);
         next();
