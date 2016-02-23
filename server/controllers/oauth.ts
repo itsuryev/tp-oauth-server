@@ -1,18 +1,30 @@
 import _ = require('lodash');
-import {Express, Response} from 'express';
+import {Express, Request, Response} from 'express';
 import oauthserver = require('oauth2-server');
 import {TokenUserInfo} from '../oauth/models';
 import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
 import TokenStorage from '../oauth/tokenStorage';
-
-const TEST_USER: TokenUserInfo = {
-    id: 140123,
-    accountName: 'localhost'
-};
+import UserInfoProvider from '../userInfoProvider';
 
 function renderError(res: Response, message: string) {
     res.render('pages/oauth-error', {message});
+}
+
+function authorizeUser(req: Request, res: Response, next) {
+    UserInfoProvider
+        .getUserInfoFromRequest(req)
+        .then(userInfo => {
+            if (!userInfo) {
+                // TODO: redirect to TP for authorization
+                renderError(res, 'User not authorized');
+                return;
+            }
+
+            req['tpUser'] = userInfo;
+            next();
+        })
+        .catch(err => renderError(res, err));
 }
 
 export default function init(app: Express) {
@@ -24,9 +36,9 @@ export default function init(app: Express) {
         debug: process.env.NODE_ENV !== 'production'
     });
 
-    app.all('/oauth/access_token', appOAuth.grant());
+    app.all('/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get('/oauth/authorize', (req, res, next) => {
+    app.get('/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
         oauthFlow
             .getAuthorizationRequest(req)
             .then(authRequest => {
@@ -37,7 +49,7 @@ export default function init(app: Express) {
                 // to prevent authorizing anyone who knows some client_id.
 
                 TokenStorage
-                    .getAccessTokenForClientAndUser(clientInfo.clientId, TEST_USER.id, TEST_USER.accountName)
+                    .getAccessTokenForClientAndUser(clientInfo.clientId, authRequest.user)
                     .then(existingToken => {
                         if (!existingToken) {
                             return res.render('pages/oauth-authorize', {
@@ -48,7 +60,7 @@ export default function init(app: Express) {
                         }
 
                         const nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
-                            next(null, true, TEST_USER);
+                            next(null, true, authRequest.user);
                         });
 
                         nextMiddleware(req, res, next);
@@ -57,16 +69,16 @@ export default function init(app: Express) {
             .catch(err => renderError(res, err));
     });
 
-    app.post('/oauth/authorize', (req, res, next) => {
+    app.post('/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
         // todo: CSRF handling
         // todo: clickjacking
 
         next();
     }, (appOAuth as any).authCodeGrant((req, next) => {
-        next(null, req.body.allow === 'yes', TEST_USER);
+        next(null, req.body.allow === 'yes', req['tpUser']);
     }));
 
-    app.get('/tokens/:token', (req, res) => {
+    app.get('/tp_oauth/:accountName/:token', (req, res) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
             return res.status(400).send('Invalid token parameter. Should be a non-empty string.');

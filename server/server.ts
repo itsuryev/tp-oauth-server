@@ -8,13 +8,15 @@ import {logger, configureForDebug} from './logging';
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 
 // TODO: handle oauth2-server errors
+// TODO: add typings for promisified modules?
+
 const app = express();
 
 if (isDevelopmentMode) {
     configureForDebug();
 
     app.use((req, res, next) => {
-        logger.debug(`~ /${req.method} ${req.url}`);
+        logger.debug(`~ ${req.method} ${req.url}`);
         next();
     });
 }

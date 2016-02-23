@@ -104,14 +104,14 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
         }
 
         const clientId: string = request.body.client_id;
-        const user = request.user;
+        const user: TokenUserInfo = request.user;
         if (!clientId || !user) {
             logger.error('Unable to retrieve clientId or user from request for possible token re-issue');
             return callback(null, null);
         }
 
         TokenStorage
-            .getAccessTokenForClientAndUser(clientId, user.id, user.accountName)
+            .getAccessTokenForClientAndUser(clientId, user)
             .then(existingToken => {
                 if (!existingToken) {
                     logger.debug('generateToken: There is no existing access token for specified client and user, falling back to default generation');

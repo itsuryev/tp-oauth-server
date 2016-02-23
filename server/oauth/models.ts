@@ -2,6 +2,7 @@ export class RedirectUri {
     private _path: string;
 
     constructor(path: string) {
+        // TODO: add uri validation
         this._path = path;
     }
 
@@ -37,4 +38,5 @@ export interface TokenInfo {
 export interface AuthorizationRequest {
     clientInfo: ClientInfo;
     redirectUri: RedirectUri;
+    user: TokenUserInfo;
 }

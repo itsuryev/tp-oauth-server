@@ -4,12 +4,12 @@ import {TokenInfo, TokenUserInfo} from './models';
 import ClientStorage from './clientStorage';
 
 export default {
-    getAccessTokenForClientAndUser(clientId: string, userId: number, accountName: string): Promise<TokenInfo> {
+    getAccessTokenForClientAndUser(clientId: string, user: TokenUserInfo): Promise<TokenInfo> {
         return pgAsync
             .doWithPgClient(client => {
                 return client.queryAsync(
                     'SELECT at.token, at.account_name, at.user_id FROM access_tokens at JOIN clients c ON at.client_id = c.id AND c.client_key = $1 AND at.user_id = $2 AND at.account_name = $3 LIMIT 1',
-                    [clientId, userId, accountName]);
+                    [clientId, user.id, user.accountName]);
             })
             .then(result => {
                 if (!result.rowCount) {
