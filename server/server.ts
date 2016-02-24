@@ -59,7 +59,8 @@ app.get(URL_PREFIX + '/test/:accountName', (req: express.Request, res) => {
 initOAuthController(app);
 initClientsController(app);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const PORT = nconf.get('port');
+const IP = nconf.get('ip');
+app.listen(PORT, IP, () => {
     logger.info(`App started on port ${PORT}`);
 });
