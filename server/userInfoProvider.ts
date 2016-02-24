@@ -29,7 +29,7 @@ function buildAccountUrl(accountName: string): string {
 export default class UserInfoProvider {
     static getUserInfoFromRequest(req: Request): Promise<UserInfo> {
         logger.debug('Enter getUserInfoFromRequest');
-        logger.debug('Headers', req.headers['cookie']);
+        logger.debug('Headers', req.headers['Cookie']);
 
         const accountName = UserInfoProvider.getAccountName(req);
 
@@ -47,7 +47,10 @@ export default class UserInfoProvider {
                 include: '[id]',
                 format: 'json'
             },
-            json: true
+            json: true,
+            headers: {
+                'Cookie': headerCookie
+            }
         };
 
         return rp(`${buildAccountUrl(accountName)}/api/v1/Users/LoggedUser`, options)
