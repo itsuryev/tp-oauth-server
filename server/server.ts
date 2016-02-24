@@ -38,6 +38,7 @@ function getInfo(req: express.Request, res: express.Response) {
                 accountName: userInfo.accountName,
                 NODE_ENV: process.env.NODE_ENV || '<unset>',
                 requestUrl: req.url,
+                accountResolver: nconf.get('accountResolver'),
                 postgres: nconf.get('postgresConnectionString'),
                 cookie: userInfo.cookie
             });

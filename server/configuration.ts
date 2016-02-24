@@ -9,6 +9,6 @@ nconf
     .env()
     .file('override', path.resolve(__dirname, '../build/config.private.json'))
     .defaults({
-        accountResolver: 'localhost', // 'tpondemand', 'tpminsk',
+        accountResolver: 'localhost', // 'tpondemand.com', 'tpondemand.net' 'tpminsk.by',
         postgresConnectionString: ''
     });

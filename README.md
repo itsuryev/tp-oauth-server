@@ -27,6 +27,8 @@ Then:
 
     npm start
 
+Add `config.private.json` file to `/build` directory. Look up the sample format in `/build/config.example.json`.
+
 You can also use [Sample OAuth client](https://github.com/khmylov/tp-oauth-client) to test the integration.
 
 ### Integration with Targetprocess

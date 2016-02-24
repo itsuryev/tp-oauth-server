@@ -16,10 +16,10 @@ function buildAccountUrl(accountName: string): string {
     switch (accountResolver) {
         case 'localhost':
             return 'http://localhost/targetprocess';
-        case 'tpminsk':
-            return `http://${accountName}.tpminsk.by`;
-        case 'tpondemand':
-            return `http://${accountName}.tpondemand.com`;
+        case 'tpminsk.by':
+        case 'tpondemand.net':
+        case 'tpondemand.com':
+            return `http://${accountName}.${accountResolver}`;
         default:
             logger.error('Unknown accountResolver', {accountResolver});
             throw new Error('Unknown accountResolver');

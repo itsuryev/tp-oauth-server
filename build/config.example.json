@@ -1,0 +1,4 @@
+{
+  "postgresConnectionString": "postgresql://postgres:store-my-data-and-be-save@localhost:5432/auth",
+  "accountResolver": "tpondemand.net"
+}
