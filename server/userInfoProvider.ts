@@ -2,6 +2,7 @@ import {Request} from 'express';
 import http = require('http');
 import Promise = require('bluebird');
 import {logger} from './logging';
+import {nconf} from './configuration';
 import rp = require('request-promise');
 
 interface UserInfo {
@@ -11,8 +12,18 @@ interface UserInfo {
 }
 
 function buildAccountUrl(accountName: string): string {
-    return 'http://localhost/targetprocess';
-    //return `http://${accountName}.tpondemand.com`;
+    const accountResolver = nconf.get('accountResolver');
+    switch (accountResolver) {
+        case 'localhost':
+            return 'http://localhost/targetprocess';
+        case 'tpminsk':
+            return `http://${accountName}.tpminsk.by`;
+        case 'tpondemand':
+            return `http://${accountName}.tpondemand.com`;
+        default:
+            logger.error('Unknown accountResolver', {accountResolver});
+            throw new Error('Unknown accountResolver');
+    }
 }
 
 export default class UserInfoProvider {
@@ -26,6 +37,7 @@ export default class UserInfoProvider {
     }
 
     static getUserInfo(headerCookie: string, accountName: string): Promise<UserInfo> {
+        logger.debug('Enter getUserInfo');
         if (!headerCookie || !headerCookie.length) {
             return Promise.resolve(null);
         }
@@ -40,6 +52,8 @@ export default class UserInfoProvider {
 
         return rp(`${buildAccountUrl(accountName)}/api/v1/Users/LoggedUser`, options)
             .then(response => {
+                logger.debug('Got auth response from TP');
+
                 return {
                     id: response.Id,
                     accountName: accountName,

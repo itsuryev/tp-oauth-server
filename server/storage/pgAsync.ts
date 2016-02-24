@@ -1,8 +1,8 @@
 import pg = require('pg');
 import Promise = require('bluebird');
 
-const defaultConnectionStrings = require('../../config/db.private.json');
-const connectionString = process.env.POSTGRES_CONNECTION_STRING || defaultConnectionStrings.postgres;
+import {nconf} from '../configuration';
+const connectionString = nconf.get('postgresConnectionString');
 
 Promise.promisifyAll(pg.Client.prototype);
 Promise.promisifyAll(pg.Client);

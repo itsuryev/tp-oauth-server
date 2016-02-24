@@ -7,15 +7,18 @@ import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
 import TokenStorage from '../oauth/tokenStorage';
 import UserInfoProvider from '../userInfoProvider';
+import {logger} from '../logging';
 
 function renderError(res: Response, message: string) {
     res.render('pages/oauth-error', {message});
 }
 
 function authorizeUser(req: Request, res: Response, next) {
+    logger.debug('Enter oauth.authorizeUser');
     UserInfoProvider
         .getUserInfoFromRequest(req)
         .then(userInfo => {
+            logger.debug('Got user info', userInfo);
             if (!userInfo) {
                 // TODO: redirect to TP for authorization
                 renderError(res, 'User not authorized');
@@ -25,7 +28,10 @@ function authorizeUser(req: Request, res: Response, next) {
             req['tpUser'] = userInfo;
             next();
         })
-        .catch(err => renderError(res, err));
+        .catch(err => {
+            logger.error('oauth.authorizeUser', err);
+            renderError(res, err);
+        });
 }
 
 export default function init(app: Express) {

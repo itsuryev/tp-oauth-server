@@ -36,6 +36,7 @@ Most likely your local installation of Targetprocess will be served by IIS.
 You will need to configure IIS url rewrite to
 
 First of all, install [IIS URL Rewrite](http://www.iis.net/downloads/microsoft/url-rewrite) and [Application Request Routing module](http://www.iis.net/downloads/microsoft/application-request-routing) to make it all possible.
+With ARR installed, enable Proxy in its settings, and disable "Reverse rewrite host" (otherwise, redirects to something like `localhost:3001` won't work).
 
 Then, add the following config to IIS site's `web.config` (assuming that Targetprocess is served from `localhost/targetprocess` and this server is bound to `localhost:3000`):
 

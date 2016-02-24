@@ -9,6 +9,7 @@ import {logger} from './logging';
 import {URL_PREFIX} from './controllers/shared';
 import Request = Express.Request;
 import {User} from "oauth2-server";
+import {nconf} from './configuration';
 
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 
@@ -37,7 +38,8 @@ function getInfo(req: express.Request, res: express.Response) {
                 accountName: userInfo.accountName,
                 NODE_ENV: process.env.NODE_ENV || '<unset>',
                 requestUrl: req.url,
-                cookie: userInfo.cookie,
+                postgres: nconf.get('postgresConnectionString'),
+                cookie: userInfo.cookie
             });
         })
         .catch(err => res.status(500).json(err));

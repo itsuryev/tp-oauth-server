@@ -16,9 +16,9 @@ const fs = require('fs');
 const sqlScript = fs.readFileSync(path.resolve(__dirname, './setup-db.sql'), 'utf8');
 console.log(sqlScript);
 
-const defaultConnectionStrings = require('./db.private.json');
+const defaultConnectionStrings = require('../build/config.private.json');
 
-const connectionString = process.env.POSTGRES_CONNECTION_STRING || defaultConnectionStrings.postgres;
+const connectionString = defaultConnectionStrings.postgresConnectionString;
 
 pg
     .connectAsync(connectionString)

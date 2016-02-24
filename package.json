@@ -9,6 +9,7 @@
     "express": "^4.13.4",
     "json-loader": "^0.5.4",
     "lodash": "^4.5.1",
+    "nconf": "^0.8.4",
     "oauth2-server": "^2.4.1",
     "pg": "^4.4.6",
     "progress-bar-webpack-plugin": "^1.3.0",
