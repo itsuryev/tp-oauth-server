@@ -1,11 +1,14 @@
 import express = require('express');
 import bodyParser = require('body-parser');
+import Promise = require('bluebird');
 import {ClientStorage} from './oauth/clientStorage';
 import initOAuthController from './controllers/oauth';
 import initClientsController from './controllers/clients';
 import UserInfoProvider from './userInfoProvider';
 import {logger} from './logging';
 import {URL_PREFIX} from './controllers/shared';
+import Request = Express.Request;
+import {User} from "oauth2-server";
 
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 
@@ -25,7 +28,25 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
-app.get(URL_PREFIX + '/test/:accountName', (req, res) => {
+function getInfo(req: express.Request, res: express.Response) {
+    UserInfoProvider
+        .getUserInfoFromRequest(req)
+        .then(userInfo => {
+            res.json({
+                userId: userInfo.id,
+                accountName: userInfo.accountName,
+                NODE_ENV: process.env.NODE_ENV || '<unset>',
+                requestUrl: req.url,
+                cookie: userInfo.cookie,
+            });
+        })
+        .catch(err => res.status(500).json(err));
+}
+
+app.get(URL_PREFIX + '/', getInfo);
+app.get(URL_PREFIX + '/tp_oauth/:accountName/', getInfo);
+
+app.get(URL_PREFIX + '/test/:accountName', (req: express.Request, res) => {
     UserInfoProvider
         .getUserInfoFromRequest(req)
         .then(userInfo => res.json(userInfo))

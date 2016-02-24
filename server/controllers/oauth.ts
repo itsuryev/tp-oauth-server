@@ -39,7 +39,7 @@ export default function init(app: Express) {
 
     app.all(URL_PREFIX + '/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
+    app.get(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUser, (req: Request, res, next) => {
         oauthFlow
             .getAuthorizationRequest(req)
             .then(authRequest => {

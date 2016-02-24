@@ -33,37 +33,26 @@ You can also use [Sample OAuth client](https://github.com/khmylov/tp-oauth-clien
 
 Most likely your local installation of Targetprocess will be served by IIS.
 
-You will need to install [iisnode](https://github.com/tjanczuk/iisnode). Follow the instructions to initialize samples.
+You will need to configure IIS url rewrite to
 
-Then change settings of created `node` IIS application to point to `/build` directory of this application instead of the samples.
+First of all, install [IIS URL Rewrite](http://www.iis.net/downloads/microsoft/url-rewrite) and [Application Request Routing module](http://www.iis.net/downloads/microsoft/application-request-routing) to make it all possible.
 
-Add the following `web.config` file to `/build` directory:
+Then, add the following config to IIS site's `web.config` (assuming that Targetprocess is served from `localhost/targetprocess` and this server is bound to `localhost:3000`):
 
     <configuration>
-      <system.webServer>
-        <handlers>
-          <add name="iisnode" path="backend.js" verb="*" modules="iisnode" />
-        </handlers>
-        <rewrite>
-          <rules>
-            <rule name="myapp">
-              <match url="/*" />
-              <action type="Rewrite" url="backend.js" />
-            </rule>
-          </rules>
-        </rewrite>
-      </system.webServer>
+        <system.webServer>
+            <rewrite>
+                <rules>
+                    <rule name="oauth">
+                        <match url="^targetprocess/oauth/([^/]+)" />
+                        <action type="Rewrite" url="http://localhost:3000/tp_oauth/testAccountName/{R:1}" />
+                    </rule>
+                </rules>
+            </rewrite>
+        </system.webServer>
     </configuration>
 
-Run `npm run build` if you haven't done so yet to create `/build/backend.js` file.
-
-Configure IIS url rewriting to map `localhost/targetprocess/oauth/{action_name}`
-to `localhost/node/tp_oauth/{account_name}/{action_name}`
-
-`account_name` can be any string representing the name of Targetprocess account you'd like to associate users with, for example `localhost`.
-
-Optionally, you can rename `node` IIS application to anything you see fit, like `tp-oauth`.
-Don't forget to update url rewriting config in that case.
+You can use any name instead of `testAccountName` in this config, this will correspond to the name of account to associate with incoming user requests.
 
 ## Deployment
 
