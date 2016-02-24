@@ -30,9 +30,14 @@ export default {
                     return Promise.reject('Client with specified ID does not exist');
                 }
 
-                const redirectUri = req.query.redirect_uri;
+                const redirectUriValue: string = req.query.redirect_uri;
+                const redirectUriValidationError = RedirectUri.validateUriPath(redirectUriValue);
+                if (redirectUriValidationError) {
+                    return Promise.reject(redirectUriValidationError);
+                }
+
                 const uriVerification = oauthClientUtils.tryGetFinalRedirectUri(
-                    storedClientInfo.redirectUri, redirectUri);
+                    storedClientInfo.redirectUri, new RedirectUri(redirectUriValue));
                 if (uriVerification.error) {
                     return Promise.reject(uriVerification.error);
                 }

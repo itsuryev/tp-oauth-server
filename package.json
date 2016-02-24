@@ -26,6 +26,7 @@
   },
   "scripts": {
     "start": "node config/run-dev.js",
-    "build": "node config/build.js"
+    "build": "node config/build.js",
+    "create-db": "node config/setup-db.js"
   }
 }

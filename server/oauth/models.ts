@@ -1,9 +1,15 @@
+import _ = require('lodash');
+
 export class RedirectUri {
     private _path: string;
 
     constructor(path: string) {
-        // TODO: add uri validation
-        this._path = path;
+        const validationError = RedirectUri.validateUriPath(path);
+        if (validationError) {
+            throw validationError;
+        }
+
+        this._path = RedirectUri.safeTrim(path);
     }
 
     getPath() {
@@ -12,6 +18,24 @@ export class RedirectUri {
 
     toString(): string {
         return this._path;
+    }
+
+    static safeTrim(s: string): string {
+        if (!s) {
+            return null;
+        }
+
+        return _.trim(s);
+    }
+
+    static validateUriPath(s: string): Error {
+        s = RedirectUri.safeTrim(s);
+
+        if (!s || !s.length) {
+            return new Error('Value should be a non-empty string');
+        }
+
+        return null;
     }
 }
 

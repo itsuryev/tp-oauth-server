@@ -8,7 +8,7 @@ import {logger} from './logging';
 
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 
-// TODO: handle oauth2-server errors (e.g. OAuth2Error for invalid code)
+// TODO: handle oauth2-server errors (e.g. OAuth2Error for invalid code, Client credentials are invalid, etc.)
 // TODO: add typings for promisified modules?
 
 const app = express();
