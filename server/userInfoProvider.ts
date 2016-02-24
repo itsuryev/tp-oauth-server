@@ -19,6 +19,7 @@ function buildAccountUrl(accountName: string): string {
         case 'tpminsk.by':
         case 'tpondemand.net':
         case 'tpondemand.com':
+            // TODO: HTTPS support
             return `http://${accountName}.${accountResolver}`;
         default:
             logger.error('Unknown accountResolver', {accountResolver});
@@ -33,10 +34,24 @@ export default class UserInfoProvider {
 
         const accountName = UserInfoProvider.getAccountName(req);
 
-        return UserInfoProvider.getUserInfo(req.headers['cookie'], accountName);
+        return UserInfoProvider._getUserInfo(req, accountName);
     }
 
-    static getUserInfo(headerCookie: string, accountName: string): Promise<UserInfo> {
+    private static _getUserInfo(req: Request, accountName: string): Promise<UserInfo> {
+        const fakeUserId: number = nconf.get('devModeFakeUserIdToSkipAuthentication');
+        if (process.env.NODE_ENV !== 'production' && fakeUserId) {
+            logger.debug('Using fake user ID', fakeUserId);
+            return Promise.resolve({
+                id: fakeUserId,
+                accountName,
+                cookie: ''
+            });
+        }
+
+        return UserInfoProvider._getUserInfoFromHeaderCookie(req.headers['cookie'], accountName);
+    }
+
+    private static _getUserInfoFromHeaderCookie(headerCookie: string, accountName: string): Promise<UserInfo> {
         logger.debug('Enter getUserInfo');
         if (!headerCookie || !headerCookie.length) {
             return Promise.resolve(null);
@@ -61,7 +76,7 @@ export default class UserInfoProvider {
                     id: response.Id,
                     accountName: accountName,
                     cookie: headerCookie
-                }
+                };
             });
     }
 

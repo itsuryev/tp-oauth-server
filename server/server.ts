@@ -6,10 +6,9 @@ import initOAuthController from './controllers/oauth';
 import initClientsController from './controllers/clients';
 import UserInfoProvider from './userInfoProvider';
 import {logger} from './logging';
-import {URL_PREFIX} from './controllers/shared';
 import Request = Express.Request;
-import {User} from "oauth2-server";
-import {nconf} from './configuration';
+import {User} from 'oauth2-server';
+import {nconf, URL_PREFIX} from './configuration';
 
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 

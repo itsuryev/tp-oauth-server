@@ -1,4 +1,4 @@
-import {URL_PREFIX} from './shared';
+import {URL_PREFIX} from '../configuration';
 import _ = require('lodash');
 import {Express, Request, Response} from 'express';
 import oauthserver = require('oauth2-server');

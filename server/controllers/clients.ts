@@ -1,4 +1,4 @@
-import {URL_PREFIX} from './shared';
+import {URL_PREFIX} from '../configuration';
 import {Express, Request} from 'express';
 import {ClientQuerySpec, ClientStorage} from '../oauth/clientStorage';
 
