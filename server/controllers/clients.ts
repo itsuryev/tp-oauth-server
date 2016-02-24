@@ -1,8 +1,9 @@
+import {URL_PREFIX} from './shared';
 import {Express, Request} from 'express';
 import {ClientQuerySpec, ClientStorage} from '../oauth/clientStorage';
 
 export default function init(app: Express) {
-    app.get('/api/clients', (req, res) => {
+    app.get(URL_PREFIX + '/api/clients', (req, res) => {
         ClientStorage
             .getClients({
                 skip: req.query.skip,

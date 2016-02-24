@@ -1,3 +1,4 @@
+import {URL_PREFIX} from './shared';
 import _ = require('lodash');
 import {Express, Request, Response} from 'express';
 import oauthserver = require('oauth2-server');
@@ -36,9 +37,9 @@ export default function init(app: Express) {
         debug: process.env.NODE_ENV !== 'production'
     });
 
-    app.all('/tp_oauth/:accountName/access_token', appOAuth.grant());
+    app.all(URL_PREFIX + '/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get('/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
+    app.get(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
         oauthFlow
             .getAuthorizationRequest(req)
             .then(authRequest => {
@@ -69,7 +70,7 @@ export default function init(app: Express) {
             .catch(err => renderError(res, err));
     });
 
-    app.post('/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
+    app.post(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
         // todo: CSRF handling
         // todo: clickjacking
 
@@ -78,7 +79,7 @@ export default function init(app: Express) {
         next(null, req.body.allow === 'yes', req['tpUser']);
     }));
 
-    app.get('/tp_oauth/:accountName/:token', (req, res) => {
+    app.get(URL_PREFIX + '/tp_oauth/:accountName/:token', (req, res) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
             return res.status(400).send('Invalid token parameter. Should be a non-empty string.');

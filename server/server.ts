@@ -5,6 +5,7 @@ import initOAuthController from './controllers/oauth';
 import initClientsController from './controllers/clients';
 import UserInfoProvider from './userInfoProvider';
 import {logger} from './logging';
+import {URL_PREFIX} from './controllers/shared';
 
 const isDevelopmentMode = process.env.NODE_ENV !== 'production';
 
@@ -24,7 +25,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
-app.get('/test/:accountName', (req, res) => {
+app.get(URL_PREFIX + '/test/:accountName', (req, res) => {
     UserInfoProvider
         .getUserInfoFromRequest(req)
         .then(userInfo => res.json(userInfo))
@@ -34,7 +35,7 @@ app.get('/test/:accountName', (req, res) => {
 initOAuthController(app);
 initClientsController(app);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     logger.info(`App started on port ${PORT}`);
 });
