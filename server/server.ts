@@ -30,20 +30,24 @@ app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
 function getInfo(req: express.Request, res: express.Response) {
+    const accountName = UserInfoProvider.getAccountName(req);
+
+    function send(userInfo) {
+        res.json({
+            userId: userInfo.id,
+            accountName: accountName,
+            NODE_ENV: process.env.NODE_ENV || '<unset>',
+            requestUrl: req.url,
+            accountResolver: nconf.get('accountResolver'),
+            postgres: nconf.get('postgresConnectionString'),
+            cookie: userInfo.cookie
+        });
+    }
+
     UserInfoProvider
         .getUserInfoFromRequest(req)
-        .then(userInfo => {
-            res.json({
-                userId: userInfo.id,
-                accountName: userInfo.accountName,
-                NODE_ENV: process.env.NODE_ENV || '<unset>',
-                requestUrl: req.url,
-                accountResolver: nconf.get('accountResolver'),
-                postgres: nconf.get('postgresConnectionString'),
-                cookie: userInfo.cookie
-            });
-        })
-        .catch(err => res.status(500).json(err));
+        .then(userInfo => send(userInfo))
+        .catch(err => send({id: 'Unable to retrieve user info'}));
 }
 
 app.get(URL_PREFIX + '/', getInfo);
