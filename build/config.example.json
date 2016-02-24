@@ -1,6 +1,6 @@
 {
   "ip": "0.0.0.0",
   "port": 3000,
-  "postgresConnectionString": "postgresql://postgres:store-my-data-and-be-save@localhost:5432/auth",
-  "accountResolver": "tpondemand.net"
+  "postgresConnectionString": "postgresql://postgres:password@localhost:5432/auth",
+  "accountResolver": "localhost"
 }
