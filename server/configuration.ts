@@ -16,7 +16,8 @@ nconf
         redis: {
             host: '127.0.0.1',
             port: '6379',
-            dbNumber: 0
+            dbNumber: 0,
+            password: null
         },
 
         // Specifies how to build URL of Targetprocess instance from oauth-related requests

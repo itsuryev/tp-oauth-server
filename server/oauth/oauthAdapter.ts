@@ -8,7 +8,7 @@ import TokenStorage from './tokenStorage';
 import {TokenUserInfo} from './models';
 
 function buildAuthDbCodeKey(authCode: string): string {
-    return `authcodes:${authCode}`;
+    return `${redisAsync.REDIS_KEY_PREFIX}authcodes:${authCode}`;
 }
 
 export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel {

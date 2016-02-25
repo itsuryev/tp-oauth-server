@@ -3,16 +3,24 @@ import redis = require('redis');
 import Promise = require('bluebird');
 import {nconf} from '../configuration';
 
+Promise.promisifyAll((redis as any).RedisClient.prototype);
+Promise.promisifyAll((redis as any).Multi.prototype);
+
 interface RedisConfig {
     host: string;
     port: number;
     dbNumber: number;
+    password: string;
 }
 
 export default class RedisAsync {
+    static get REDIS_KEY_PREFIX() {
+        return 'tpauthservice:';
+    }
+
     static get redisConnectionText() {
         const config = RedisAsync.redisConfig;
-        return `${config.host}:${config.port} -> db ${config.dbNumber}`;
+        return `${config.host}:${config.port} -> db ${config.dbNumber} -> ${config.password ? '<password>' : '<no password>'}`;
     }
 
     static get redisConfig(): RedisConfig {
@@ -21,12 +29,13 @@ export default class RedisAsync {
 
     static doWithRedisClient<T>(f: (c: any) => Promise<any>) {
         const config = RedisAsync.redisConfig;
-        const client: any = Promise.promisifyAll(redis.createClient(config.port, config.host));
+        const client: any = redis.createClient({
+            host: config.host,
+            port: config.port,
+            db: config.dbNumber,
+            auth_pass: config.password
+        } as redis.ClientOpts);
 
-        const computation = config.dbNumber ?
-            client.selectAsync(config.dbNumber).then(() => f(client)) :
-            f(client);
-
-        return computation.finally(() => client.quit());
+        return f(client).finally(() => client.quit());
     }
 };
