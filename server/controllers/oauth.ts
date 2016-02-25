@@ -85,7 +85,7 @@ export default function init(app: Express) {
         next(null, req.body.allow === 'yes', req['tpUser']);
     }));
 
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/:token', (req, res) => {
+    app.get(URL_PREFIX + '/tp_oauth/:accountName/tokens/:token', (req, res) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
             return res.status(400).send('Invalid token parameter. Should be a non-empty string.');
@@ -96,12 +96,18 @@ export default function init(app: Express) {
             .then(tokenInfo => tokenInfo.user)
             .then(userInfo => {
                 if (!userInfo) {
-                    return res.status(404).send('Specified token does not exist');
+                    return res.json({
+                        status: 'error',
+                        message: 'Specified token does not exist'
+                    });
                 }
 
                 res.json({
-                    userId: userInfo.id,
-                    accountName: userInfo.accountName
+                    status: 'ok',
+                    token: {
+                        userId: userInfo.id,
+                        accountName: userInfo.accountName
+                    }
                 });
             })
             .catch(err => res.status(500).send(err));
