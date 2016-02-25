@@ -1,6 +1,7 @@
 import {URL_PREFIX} from '../configuration';
 import {Express, Request} from 'express';
 import {ClientQuerySpec, ClientStorage} from '../oauth/clientStorage';
+import {logger} from '../logging';
 
 export default function init(app: Express) {
     app.get(URL_PREFIX + '/api/clients', (req, res) => {
@@ -11,6 +12,7 @@ export default function init(app: Express) {
                 includeSecrets: false
             })
             .then(clients => {
+                logger.debug('Got clients info', clients);
                 res.json({items: clients});
             })
             .catch(err => res.status(500).json(err));

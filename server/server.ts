@@ -10,19 +10,15 @@ import Request = Express.Request;
 import {User} from 'oauth2-server';
 import {nconf, URL_PREFIX} from './configuration';
 
-const isDevelopmentMode = process.env.NODE_ENV !== 'production';
-
 // TODO: handle oauth2-server errors (e.g. OAuth2Error for invalid code, Client credentials are invalid, etc.)
 // TODO: add typings for promisified modules?
 
 const app = express();
 
-if (isDevelopmentMode) {
-    app.use((req, res, next) => {
-        logger.debug(`~ ${req.method} ${req.url}`);
-        next();
-    });
-}
+app.use((req, res, next) => {
+    logger.debug(`~ ${req.method} ${req.url}`);
+    next();
+});
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());

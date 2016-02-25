@@ -3,7 +3,7 @@ import path = require('path');
 export const logger = winston;
 
 const isProduction = process.env.NODE_ENV === 'production';
-logger.level = isProduction ? 'warn' : 'debug';
+logger.level = isProduction ? 'debug' : 'debug';
 
 logger.remove(winston.transports.Console);
 logger.add(winston.transports.Console, {
