@@ -8,6 +8,7 @@ import UserInfoProvider from './userInfoProvider';
 import {logger} from './logging';
 import Request = Express.Request;
 import {User} from 'oauth2-server';
+import RedisAsync from './storage/redisAsync';
 import {nconf, URL_PREFIX} from './configuration';
 
 // TODO: handle oauth2-server errors (e.g. OAuth2Error for invalid code, Client credentials are invalid, etc.)
@@ -35,6 +36,7 @@ function getInfo(req: express.Request, res: express.Response) {
             requestUrl: req.url,
             accountResolver: nconf.get('accountResolver'),
             postgres: nconf.get('postgresConnectionString'),
+            redis: RedisAsync.redisConnectionText,
             cookie: userInfo.cookie
         });
     }
