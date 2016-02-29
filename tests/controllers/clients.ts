@@ -1,6 +1,7 @@
 /// <reference path="../../typings/main.d.ts" />
 
 import _ = require('lodash');
+import Promise = require('bluebird');
 import request = require('supertest');
 import testServerFactory from '../testServerFactory';
 
@@ -12,7 +13,14 @@ import {nconf} from '../../server/configuration';
 import chai = require('chai');
 const expect = chai.expect;
 
-describe('controllers/oauth', () => {
+interface TestClientInfo {
+    clientId: string;
+    name: string;
+    description: string;
+    redirectUri: string;
+}
+
+describe('controllers/clients', () => {
     var server;
 
     beforeEach(() => {
@@ -23,29 +31,62 @@ describe('controllers/oauth', () => {
         server.close(done);
     });
 
-    describe('GET /status', () => {
-        it('return status', done => {
+    function getJsonFromServer(url) {
+        return new Promise((resolve, reject) => {
             request(server)
-                .get('/tp_oauth/testAccountName/status')
+                .get(url)
                 .expect('Content-Type', /json/)
-                .expect(res => {
-                    const resJson = JSON.parse(res.text);
-                    expect(resJson.redis).to.equal('OK');
-                    expect(resJson.pg).to.equal('OK');
-                    expect(resJson.accountName).to.equal('testAccountName');
-
-                    const userInfo = resJson.userInfo;
-                    expect(userInfo.id).to.equal(nconf.get('devModeFakeUserIdToSkipAuthentication'));
-                    expect(userInfo.accountName).to.equal('testAccountName');
-                })
+                .expect(res => resolve(JSON.parse(res.text)))
                 .end(err => {
                     if (err) {
-                        throw err;
-                    }
-                    else {
-                        done();
+                        reject(err);
                     }
                 });
+        });
+    }
+
+    function insertClient(pgClient, {clientId, name, redirectUri, description}) {
+        return pgClient.queryAsync(
+            'INSERT INTO clients (client_key, name, client_secret, redirect_uri, description) VALUES ($1, $2, $3, $4, $5)',
+            [clientId, name, clientId + 'secret', redirectUri, description]);
+    }
+
+    function assertClientInfoEquality(expected: TestClientInfo, actual) {
+        expect(actual.clientId).to.be.equal(expected.clientId);
+        expect(actual.name).to.be.equal(expected.name);
+        expect(actual.redirectUri).to.be.equal(expected.redirectUri);
+        expect(actual.description).to.be.equal(expected.description);
+    }
+
+    describe('GET /', () => {
+        it('returns list of clients', done => {
+            const clients: TestClientInfo[] = [
+                {
+                    clientId: 'testClient1',
+                    name: 'Test Client #1',
+                    redirectUri: 'http://example.com/c1',
+                    description: 'First client'
+                },
+                {
+                    clientId: 'testClient2',
+                    name: 'Test Client #2',
+                    redirectUri: 'http://example.com/c2',
+                    description: 'Second client'
+                }
+            ];
+
+            pgAsync
+                .doWithPgClient(pgClient => pgClient
+                    .queryAsync('DELETE FROM clients')
+                    .then(() => insertClient(pgClient, clients[0]))
+                    .then(() => insertClient(pgClient, clients[1])))
+                .then(() => getJsonFromServer('/api/clients'))
+                .then(response => {
+                    const items = response.items;
+                    assertClientInfoEquality(clients[0], items[0]);
+                    assertClientInfoEquality(clients[1], items[1]);
+                })
+                .then(done);
         });
     });
 
@@ -98,7 +139,7 @@ describe('controllers/oauth', () => {
         });
     }
 
-    describe('GET /authorizations', () => {
+    describe('/GET authorizations', () => {
         it('returns list of user\'s client authorizations', done => {
             const clientKey = 'get-authorizations-test-client';
             const clientName = 'Test client name for authorizations get';
@@ -117,7 +158,7 @@ describe('controllers/oauth', () => {
         });
     });
 
-    describe('DELETE /authorizations', () => {
+    describe('/DELETE authorizations', () => {
         it('deletes specified authorization', done => {
             const clientKey = 'delete-authorization-test-client';
             const clientName = 'Test client name for authorizations delete';

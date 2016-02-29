@@ -60,7 +60,7 @@ export interface ClientInfo {
     name: string;
     description: string;
     clientSecret: string;
-    redirectUri: RedirectUri;
+    redirectUri: string;
 }
 
 export interface TokenUserInfo {

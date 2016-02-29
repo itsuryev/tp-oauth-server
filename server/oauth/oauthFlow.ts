@@ -37,7 +37,7 @@ export default {
                 }
 
                 const uriVerification = oauthClientUtils.tryGetFinalRedirectUri(
-                    storedClientInfo.redirectUri, new RedirectUri(redirectUriValue));
+                    new RedirectUri(storedClientInfo.redirectUri), new RedirectUri(redirectUriValue));
                 if (uriVerification.error) {
                     return Promise.reject(uriVerification.error);
                 }

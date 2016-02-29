@@ -29,7 +29,7 @@ export class ClientStorage {
             clientId: row.client_key,
             name: row.name,
             clientSecret: includeSecrets ? row.client_secret : undefined,
-            redirectUri: new RedirectUri(row.redirect_uri),
+            redirectUri: row.redirect_uri,
             description: row.description
         };
     }

@@ -40,7 +40,7 @@ export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel 
 
                 return {
                     clientId: clientInfo.clientId,
-                    redirectUri: clientInfo.redirectUri.getPath()
+                    redirectUri: clientInfo.redirectUri
                 };
             })
             .then(x => callback(null, x))
