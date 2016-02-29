@@ -81,7 +81,7 @@ export default class UserInfoProvider {
     }
 
     static getAccountName(req: Request): string {
-        logger.debug('getAccountName', {url: req.url, host: req.host, hostname: req.hostname});
+        logger.debug('getAccountName', {url: req.url, hostname: req.hostname});
         const accountName = req.params.accountName;
 
         if (!accountName || !accountName.length) {

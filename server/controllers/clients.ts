@@ -1,9 +1,11 @@
-import {URL_PREFIX} from '../configuration';
+import {nconf} from '../configuration';
 import {Express, Request} from 'express';
 import {ClientQuerySpec, ClientStorage} from '../oauth/clientStorage';
 import {logger} from '../logging';
 
 export default function init(app: Express) {
+    const URL_PREFIX = nconf.get('urlPrefix');
+
     app.get(URL_PREFIX + '/api/clients', (req, res) => {
         ClientStorage
             .getClients({

@@ -2,67 +2,24 @@ import oauthserver = require('oauth2-server');
 import Promise = require('bluebird');
 import {Request} from 'express';
 import {logger} from '../logging';
-import redisAsync from '../storage/redisAsync';
 import {ClientStorage} from './clientStorage';
 import TokenStorage from './tokenStorage';
+import AuthCodeStorage from './authCodeStorage';
 import {TokenUserInfo} from './models';
-
-function buildAuthDbCodeKey(authCode: string): string {
-    return `${redisAsync.REDIS_KEY_PREFIX}authcodes:${authCode}`;
-}
 
 export default class OAuthAdapter implements oauthserver.AuthorizationCodeModel {
     getAuthCode(authCode: string, callback: oauthserver.GetAuthCodeCallback): void {
         logger.debug('Enter getAuthCode', {authCode});
-
-        const entryKey = buildAuthDbCodeKey(authCode);
-
-        redisAsync
-            .doWithRedisClient(client => client.hgetallAsync(entryKey))
-            .then(results => {
-                if (!results) {
-                    return null;
-                }
-
-                const user: TokenUserInfo = {
-                    id: results.userId,
-                    accountName: results.accountName
-                };
-
-                return {
-                    clientId: results.clientId,
-                    expires: new Date(results.expires),
-                    user: user
-                };
-            })
-            .then(authCode => {
-                if (authCode) {
-                    // Use auth code only once
-                    return redisAsync
-                        .doWithRedisClient(client => client.delAsync(entryKey))
-                        .then(() => authCode);
-                }
-
-                return null;
-            })
+        AuthCodeStorage
+            .getAuthCode(authCode)
             .then((x: any) => callback(null, x))
             .catch(err => callback(err, null));
     }
 
     saveAuthCode(authCode: string, clientId: string, expires: Date, user, callback: oauthserver.SaveAuthCodeCallback) {
         logger.debug('Enter saveAuthCode', {authCode, clientId, expires, user});
-
-        const entryKey = buildAuthDbCodeKey(authCode);
-        const expireAtDb = Math.ceil(expires.getTime() / 1000);
-        redisAsync
-            .doWithRedisClient(db => db.hmsetAsync(entryKey, {
-                authCode: authCode,
-                clientId: clientId,
-                expires: expires.toISOString(),
-                userId: user.id,
-                accountName: user.accountName
-            }))
-            .then(() => redisAsync.doWithRedisClient(db => db.expireatAsync(entryKey, expireAtDb)))
+        AuthCodeStorage
+            .saveAuthCode(authCode, clientId, expires, user)
             .then(() => callback(null))
             .catch(err => callback(err));
     }

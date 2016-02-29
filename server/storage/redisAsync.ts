@@ -38,4 +38,9 @@ export default class RedisAsync {
 
         return f(client).finally(() => client.quit());
     }
+
+    static ping(): Promise<void> {
+        const key = `${RedisAsync.REDIS_KEY_PREFIX}:nonexistingkey`;
+        return RedisAsync.doWithRedisClient(c => c.hgetallAsync(key)).then(_ => null);
+    }
 };

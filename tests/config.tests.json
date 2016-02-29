@@ -1,0 +1,8 @@
+{
+  "postgresConnectionString": "postgresql://postgres:store-my-data-and-be-save@localhost:5432/auth_tests",
+  "redis": {
+    "host": "127.0.0.1",
+    "port": "6379",
+    "dbNumber": 15
+  }
+}

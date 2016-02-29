@@ -4,6 +4,7 @@ const _ = require('lodash');
 const webpack = require('webpack');
 const webpackConfigs = require('./webpack-configs');
 const backendConfig = webpackConfigs.backendConfig;
+const backendTestConfig = webpackConfigs.backendTestConfig;
 
 function log() {
     console.log.apply(console, ['~webpack:'].concat(_.toArray(arguments)));
@@ -27,10 +28,15 @@ module.exports = {
     build(callback) {
         webpack(backendConfig).run((err, stats) => {
             handleWebpackResults(err, stats);
-            if (callback) {
-                callback(err);
-            }
+            callback && callback(err);
         });
+    },
+
+    buildTests(callback) {
+        webpack(backendTestConfig).run((err, stats) => {
+            handleWebpackResults(err, stats);
+            callback && callback(err);
+        })
     },
 
     watch(completedCallback, restartCallback) {

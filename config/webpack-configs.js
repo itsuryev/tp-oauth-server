@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
+const _ = require('lodash');
 const globalExclude = /node_modules/;
 
 // Despite this file being located in /config, all paths are specified relative to the root
@@ -50,6 +51,15 @@ if (process.env.NODE_ENV !== 'production') {
     backendConfig.debug = true;
 }
 
+const backendTestConfig = _.extend(_.cloneDeep(backendConfig), {
+    entry: ofAppPath('tests/index.ts'),
+    output: {
+        path: ofAppPath('tests'),
+        filename: 'index.js'
+    }
+});
+
 module.exports = {
-    backendConfig
+    backendConfig,
+    backendTestConfig
 };

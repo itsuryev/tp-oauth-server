@@ -1,7 +1,10 @@
-import {URL_PREFIX} from '../configuration';
+import {nconf} from '../configuration';
 import _ = require('lodash');
 import {Express, Request, Response} from 'express';
+import Promise = require('bluebird');
 import oauthserver = require('oauth2-server');
+import redisAsync from '../storage/redisAsync';
+import pgAsync from '../storage/pgAsync';
 import {TokenUserInfo} from '../oauth/models';
 import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
@@ -35,12 +38,36 @@ function authorizeUser(req: Request, res: Response, next) {
 }
 
 export default function init(app: Express) {
+    const URL_PREFIX = nconf.get('urlPrefix');
+
     const appOAuth = oauthserver({
         model: new OAuthModel(),
         grants: ['authorization_code'],
         accessTokenLifetime: null,
         authCodeLifetime: 300,
         debug: process.env.NODE_ENV !== 'production'
+    });
+
+    app.get(URL_PREFIX + '/tp_oauth/:accountName/status', (req: Request, res) => {
+        function safePing(pingPromise, getResult = null) {
+            return new Promise(resolve => {
+                pingPromise.then(res => resolve(getResult ? getResult(res) : 'OK')).catch(err => resolve(err.toString()));
+            });
+        }
+
+        const join: Function = Promise.join;
+
+        join(
+            safePing(pgAsync.ping()), safePing(redisAsync.ping()), safePing(UserInfoProvider.getUserInfoFromRequest(req), x => x),
+            (pgPing, redisPing, userInfo) => {
+                res.json({
+                    redis: redisPing,
+                    pg: pgPing,
+                    userInfo: userInfo,
+                    accountName: UserInfoProvider.getAccountName(req)
+                });
+            })
+            .catch(err => res.json(err));
     });
 
     app.all(URL_PREFIX + '/tp_oauth/:accountName/access_token', appOAuth.grant());

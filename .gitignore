@@ -4,3 +4,4 @@ typings/
 build/
 *.private.json
 logs/
+tests/index.js

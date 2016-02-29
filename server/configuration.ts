@@ -4,37 +4,37 @@ import path = require('path');
 
 export const nconf = nconfImport;
 
-nconf
-    .argv()
-    .env()
-    .file('override', path.resolve(__dirname, '../build/config.private.json'))
-    .defaults({
-        port: 3000,
-        ip: '0.0.0.0',
-        postgresConnectionString: '',
+export function initConfig(configFileName: string) {
+    nconf
+        .argv()
+        .env()
+        .file('override', configFileName)
+        .defaults({
+            port: 3000,
+            ip: '0.0.0.0',
+            postgresConnectionString: '',
 
-        redis: {
-            host: '127.0.0.1',
-            port: '6379',
-            dbNumber: 0,
-            password: null
-        },
+            redis: {
+                host: '127.0.0.1',
+                port: '6379',
+                dbNumber: 0,
+                password: null
+            },
 
-        // Specifies how to build URL of Targetprocess instance from oauth-related requests
-        // like /tp_oauth/{accountName}/authorize.
-        // Possible options:
-        //   - localhost; always point to localhost/targetprocess
-        //   - tpondemand.com, tpondemand.net, tpminsk.by; prepend account name to specified host
-        accountResolver: 'localhost', // 'tpondemand.com', 'tpondemand.net' 'tpminsk.by',
+            // Specifies how to build URL of Targetprocess instance from oauth-related requests
+            // like /tp_oauth/{accountName}/authorize.
+            // Possible options:
+            //   - localhost; always point to localhost/targetprocess
+            //   - tpondemand.com, tpondemand.net, tpminsk.by; prepend account name to specified host
+            accountResolver: 'localhost', // 'tpondemand.com', 'tpondemand.net' 'tpminsk.by',
 
-        // Can be used to avoid any user authentication with Targetprocess instance.
-        // Specified value will always be substituted instead of actual user ID.
-        // Works for non-production environment only
-        // devModeFakeUserIdToSkipAuthentication: 1,
+            // Can be used to avoid any user authentication with Targetprocess instance.
+            // Specified value will always be substituted instead of actual user ID.
+            // Works for non-production environment only
+            // devModeFakeUserIdToSkipAuthentication: 1,
 
-        // A prefix to prepend to all routes of this app.
-        // Might be required when app is served from some virtual directory.
-        urlPrefix: ''
-    });
-
-export const URL_PREFIX = nconf.get('urlPrefix');
+            // A prefix to prepend to all routes of this app.
+            // Might be required when app is served from some virtual directory.
+            urlPrefix: ''
+        });
+}
