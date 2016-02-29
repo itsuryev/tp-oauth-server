@@ -24,16 +24,18 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^2.1.0",
+    "gulp": "^3.9.1",
     "mocha": "^2.4.5",
     "nodemon": "^1.9.0",
+    "run-sequence": "^1.1.5",
     "supertest": "^1.2.0",
     "tslint": "^3.4.0"
   },
   "scripts": {
-    "start": "node config/run-dev.js",
-    "build": "node config/build.js",
-    "local-db": "node config/db/pg-local.js",
-    "pretest": "node config/build-tests.js && node config/db/pg-tests.js",
+    "start": "gulp watch",
+    "build": "gulp backend-build",
+    "local-db": "gulp db-recreate-sample",
+    "pretest": "gulp tests-prepare",
     "test": "mocha tests"
   }
 }

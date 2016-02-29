@@ -1,5 +1,3 @@
-/* eslint no-console: 0 */
-
 const pg = require('pg');
 const Promise = require('bluebird');
 
@@ -14,8 +12,6 @@ Promise.promisifyAll(pg);
 const path = require('path');
 const fs = require('fs');
 
-const applicationConfig = require('../../build/config.private.json');
-
 function readSqlScript(fileName) {
     return fs.readFileSync(path.resolve(__dirname, fileName), 'utf8');
 }
@@ -28,18 +24,20 @@ function withPgAsync(conectionString, func) {
         });
 }
 
-function runScript(client, fileName) {
-    return client.queryAsync(readSqlScript(fileName));
+function runScript(connectionString, fileName) {
+    return withPgAsync(connectionString, client => client.queryAsync(readSqlScript(fileName)));
 }
 
 module.exports = {
-    defaultConnectionString: applicationConfig.postgresConnectionString,
+    dropEverything(connectionString, done) {
+        runScript(connectionString, './db/pg-drop-everything.sql').finally(done);
+    },
 
-    localRebuildWithSampleData(connectionString) {
-        return withPgAsync(connectionString, client => {
-            return runScript(client, './pg-drop-everything.sql')
-                .then(() => runScript(client, './pg-create.sql'))
-                .then(() => runScript(client, './pg-sample-data.sql'));
-        })
+    createDatabase(connectionString, done) {
+        runScript(connectionString, './db/pg-create.sql').finally(done);
+    },
+
+    createSampleData(connectionString, done) {
+        runScript(connectionString, './db/pg-sample-data.sql').finally(done);
     }
 };
