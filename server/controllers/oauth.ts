@@ -1,8 +1,9 @@
-import {nconf} from '../configuration';
 import _ = require('lodash');
 import {Express, Request, Response} from 'express';
 import Promise = require('bluebird');
 import oauthserver = require('oauth2-server');
+import {logger} from '../logging';
+import {nconf} from '../configuration';
 import redisAsync from '../storage/redisAsync';
 import pgAsync from '../storage/pgAsync';
 import {TokenUserInfo} from '../oauth/models';
@@ -10,32 +11,7 @@ import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
 import TokenStorage from '../oauth/tokenStorage';
 import UserInfoProvider from '../userInfoProvider';
-import {logger} from '../logging';
-
-function renderError(res: Response, message: string) {
-    res.render('pages/oauth-error', {message});
-}
-
-function authorizeUser(req: Request, res: Response, next) {
-    logger.debug('Enter oauth.authorizeUser');
-    UserInfoProvider
-        .getUserInfoFromRequest(req)
-        .then(userInfo => {
-            logger.debug('Got user info', userInfo);
-            if (!userInfo) {
-                // TODO: redirect to TP for authorization
-                renderError(res, 'User not authorized');
-                return;
-            }
-
-            req['tpUser'] = userInfo;
-            next();
-        })
-        .catch(err => {
-            logger.error('oauth.authorizeUser', err);
-            renderError(res, err);
-        });
-}
+import {renderError, authorizeUserWithRedirect} from './shared';
 
 export default function init(app: Express) {
     const URL_PREFIX = nconf.get('urlPrefix');
@@ -72,7 +48,7 @@ export default function init(app: Express) {
 
     app.all(URL_PREFIX + '/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUser, (req: Request, res, next) => {
+    app.get(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req: Request, res, next) => {
         oauthFlow
             .getAuthorizationRequest(req)
             .then(authRequest => {
@@ -103,7 +79,7 @@ export default function init(app: Express) {
             .catch(err => renderError(res, err));
     });
 
-    app.post(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUser, (req, res, next) => {
+    app.post(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req, res, next) => {
         // todo: CSRF handling
         // todo: clickjacking
 

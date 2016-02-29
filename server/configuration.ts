@@ -30,7 +30,7 @@ export function initConfig(configFileName: string) {
 
             // Can be used to avoid any user authentication with Targetprocess instance.
             // Specified value will always be substituted instead of actual user ID.
-            // Works for non-production environment only
+            // Should be used for testing only
             // devModeFakeUserIdToSkipAuthentication: 1,
 
             // A prefix to prepend to all routes of this app.

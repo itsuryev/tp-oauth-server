@@ -59,8 +59,21 @@ export interface TokenInfo {
     token: string;
 }
 
+export interface TpUserInfo {
+    id: number;
+    accountName: string;
+    cookie: string;
+}
+
 export interface AuthorizationRequest {
     clientInfo: ClientInfo;
     redirectUri: RedirectUri;
     user: TokenUserInfo;
+}
+
+export interface ClientAuthorizationInfo {
+    clientId: string;
+    clientName: string;
+    clientDescription: string;
+    issueDate: Date;
 }

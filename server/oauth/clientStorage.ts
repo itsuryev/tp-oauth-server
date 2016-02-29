@@ -15,7 +15,7 @@ export class ClientStorage {
         const skip = spec.skip || 0;
         return pgAsync
             .doWithPgClient(pgClient => pgClient.queryAsync(
-                'SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients LIMIT $1 OFFSET $2',
+                'SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients WHERE delete_date IS NULL LIMIT $1 OFFSET $2',
                 [take, skip]))
             .then(result => _.map(
                 result.rows,
@@ -36,7 +36,7 @@ export class ClientStorage {
 
     static clientByIdGetter(pgClient: any, clientId: string): Promise<ClientInfo> {
         return pgClient
-            .queryAsync('SELECT id, client_key, name, client_secret, redirect_uri, description from clients WHERE client_key = $1', [clientId])
+            .queryAsync('SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients WHERE delete_date IS NULL AND client_key = $1', [clientId])
             .then(result => {
                 if (!result.rowCount) {
                     return null;

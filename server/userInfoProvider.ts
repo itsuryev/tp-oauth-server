@@ -1,15 +1,10 @@
 import {Request} from 'express';
+import rp = require('request-promise');
 import http = require('http');
 import Promise = require('bluebird');
 import {logger} from './logging';
 import {nconf} from './configuration';
-import rp = require('request-promise');
-
-interface UserInfo {
-    id: number;
-    accountName: string;
-    cookie: string;
-}
+import {TpUserInfo} from './oauth/models';
 
 function buildAccountUrl(accountName: string): string {
     const accountResolver = nconf.get('accountResolver');
@@ -28,7 +23,7 @@ function buildAccountUrl(accountName: string): string {
 }
 
 export default class UserInfoProvider {
-    static getUserInfoFromRequest(req: Request): Promise<UserInfo> {
+    static getUserInfoFromRequest(req: Request): Promise<TpUserInfo> {
         logger.debug('Enter getUserInfoFromRequest');
         logger.debug('Headers', req.headers['Cookie']);
 
@@ -37,9 +32,9 @@ export default class UserInfoProvider {
         return UserInfoProvider._getUserInfo(req, accountName);
     }
 
-    private static _getUserInfo(req: Request, accountName: string): Promise<UserInfo> {
+    private static _getUserInfo(req: Request, accountName: string): Promise<TpUserInfo> {
         const fakeUserId: number = nconf.get('devModeFakeUserIdToSkipAuthentication');
-        if (process.env.NODE_ENV !== 'production' && fakeUserId) {
+        if (fakeUserId) {
             logger.debug('Using fake user ID', fakeUserId);
             return Promise.resolve({
                 id: fakeUserId,
@@ -51,7 +46,7 @@ export default class UserInfoProvider {
         return UserInfoProvider._getUserInfoFromHeaderCookie(req.headers['cookie'], accountName);
     }
 
-    private static _getUserInfoFromHeaderCookie(headerCookie: string, accountName: string): Promise<UserInfo> {
+    private static _getUserInfoFromHeaderCookie(headerCookie: string, accountName: string): Promise<TpUserInfo> {
         logger.debug('Enter getUserInfo');
         if (!headerCookie || !headerCookie.length) {
             return Promise.resolve(null);

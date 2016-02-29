@@ -1,15 +1,18 @@
-import express = require('express');
-import bodyParser = require('body-parser');
 import Promise = require('bluebird');
+import express = require('express');
+import Request = Express.Request;
+import bodyParser = require('body-parser');
+
+import {logger} from './logging';
+import {nconf, initConfig} from './configuration';
+
 import {ClientStorage} from './oauth/clientStorage';
+import UserInfoProvider from './userInfoProvider';
+import RedisAsync from './storage/redisAsync';
+
 import initOAuthController from './controllers/oauth';
 import initClientsController from './controllers/clients';
-import UserInfoProvider from './userInfoProvider';
-import {logger} from './logging';
-import Request = Express.Request;
-import {User} from 'oauth2-server';
-import RedisAsync from './storage/redisAsync';
-import {nconf, initConfig} from './configuration';
+import initAuthorizationsController from './controllers/authorizations';
 
 export default function createServer({configFileName}) {
     // TODO: handle oauth2-server errors (e.g. OAuth2Error for invalid code, Client credentials are invalid, etc.)
@@ -64,6 +67,7 @@ export default function createServer({configFileName}) {
 
     initOAuthController(app);
     initClientsController(app);
+    initAuthorizationsController(app);
 
     const PORT = nconf.get('port');
     const IP = nconf.get('ip');

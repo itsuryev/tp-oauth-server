@@ -4,6 +4,7 @@ import {Request} from 'express';
 import oauthClientUtils from './clientUtils';
 import {ClientStorage} from './clientStorage';
 import {ClientInfo, RedirectUri, AuthorizationRequest} from './models';
+import {getTpUserFromRequest} from '../controllers/shared';
 import {logger} from '../logging';
 
 export default {
@@ -14,8 +15,7 @@ export default {
             return Promise.reject('Invalid response_type parameter (must be "code")');
         }
 
-        // Should be set by user authorization middleware
-        const user = req['tpUser'];
+        const user = getTpUserFromRequest(req);
         if (!user) {
             logger.error('getAuthorizationRequest: User is not set');
             return Promise.reject('User is not set');
