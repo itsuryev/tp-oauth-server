@@ -1,2 +1,2 @@
 import './controllers/oauthTests';
-import './oauth/uriUtilsTests';
+import './oauth/redirectUriTests';

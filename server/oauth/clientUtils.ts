@@ -1,15 +1,8 @@
+import url = require('url');
 import _ = require('lodash');
 import Result from '../result';
 import {RedirectUri} from './models';
 import {logger} from '../logging';
-
-function safeTrim(s: string): string {
-    if (!s) {
-        return null;
-    }
-
-    return _.trim(s);
-}
 
 const error = Result.createError;
 const value = Result.createValue;
@@ -28,13 +21,21 @@ export default {
             return value(storedClientRedirectUri);
         }
 
-        // todo: check that requested url points to subdomain of stored url
+        const storedUrlObject = url.parse(storedPath);
+        const requestedUrlObject = url.parse(requestedPath);
 
-        if (storedPath.toLowerCase() !== requestedPath.toLowerCase()) {
-            logger.info('Stored and requested URIs don\'t match', {storedPath, requestedPath});
-            return error<RedirectUri>('Stored and requested URIs don\'t match');
+        if (storedUrlObject.protocol !== requestedUrlObject.protocol) {
+            return error<RedirectUri>('Stored and requested URIs have different protocols');
         }
 
-        return value(storedClientRedirectUri);
+        if (storedUrlObject.hostname !== requestedUrlObject.hostname) {
+            return error<RedirectUri>('Stored and requested URIs have different hostnames');
+        }
+
+        if (!_.startsWith(requestedUrlObject.path, storedUrlObject.path)) {
+            return error<RedirectUri>('Requested URI may only point to sub-path of stored URI');
+        }
+
+        return value(requestedRedirectUri);
     }
 };

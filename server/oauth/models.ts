@@ -1,4 +1,5 @@
 import _ = require('lodash');
+import url = require('url');
 
 export class RedirectUri {
     private _path: string;
@@ -33,6 +34,20 @@ export class RedirectUri {
 
         if (!s || !s.length) {
             return new Error('Value should be a non-empty string');
+        }
+
+        const parsed = url.parse(s);
+        if (parsed.query) {
+            return new Error('Query string should be empty');
+        }
+
+        if (parsed.auth) {
+            return new Error('Authorization part should not be specified');
+        }
+
+        const protocol = parsed.protocol;
+        if (protocol !== 'http:' && protocol !== 'https:') {
+            return new Error(`Only HTTP and HTTPS protocols are supported. Actual: ${protocol}.`);
         }
 
         return null;
