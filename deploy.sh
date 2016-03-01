@@ -1,4 +1,4 @@
-NODE_ENV=production npm install
+npm install
 
 rm -rf ./typings
 typings install
