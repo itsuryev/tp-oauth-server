@@ -10,17 +10,16 @@ export class ClientQuerySpec {
 }
 
 export class ClientStorage {
-    static getClients(spec: ClientQuerySpec): Promise<ClientInfo[]> {
+    static async getClients(spec: ClientQuerySpec): Promise<ClientInfo[]> {
         const take = Math.min(spec.take || 25, 100);
         const skip = spec.skip || 0;
-        return pgAsync
+        const result = await pgAsync
             .doWithPgClient(pgClient => pgClient.queryAsync(
                 'SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients WHERE delete_date IS NULL LIMIT $1 OFFSET $2',
-                [take, skip]))
-            .then(result => _.map(
-                result.rows,
-                row => ClientStorage._buildClientInfoFromRow(row, spec.includeSecrets || false))
-            );
+                [take, skip]));
+
+        return _.map(result.rows, row =>
+            ClientStorage._buildClientInfoFromRow(row, spec.includeSecrets || false));
     }
 
     private static _buildClientInfoFromRow(row, includeSecrets: boolean): ClientInfo {
@@ -34,16 +33,16 @@ export class ClientStorage {
         };
     }
 
-    static clientByIdGetter(pgClient: any, clientId: string): Promise<ClientInfo> {
-        return pgClient
-            .queryAsync('SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients WHERE delete_date IS NULL AND client_key = $1', [clientId])
-            .then(result => {
-                if (!result.rowCount) {
-                    return null;
-                }
+    static async clientByIdGetter(pgClient: any, clientId: string): Promise<ClientInfo> {
+        const result = await pgClient.queryAsync(
+            'SELECT id, client_key, name, client_secret, redirect_uri, description FROM clients WHERE delete_date IS NULL AND client_key = $1',
+            [clientId]);
 
-                return ClientStorage._buildClientInfoFromRow(result.rows[0], true);
-            });
+        if (!result.rowCount) {
+            return null;
+        }
+
+        return ClientStorage._buildClientInfoFromRow(result.rows[0], true);
     }
 
     static getClientByIdAsync(clientId: string): Promise<ClientInfo> {
