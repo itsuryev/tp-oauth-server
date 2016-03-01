@@ -24,5 +24,5 @@ gulp.task('db-test-sample', done => pgTasks.createSampleData(pgTestConnectionStr
 
 gulp.task('tests-prepare', done => runSequence(
     'backend-tests-build',
-    'db-test-drop', 'db-test-create', 'db-test-sample',
+    'db-test-drop', 'db-test-create',
     done));
