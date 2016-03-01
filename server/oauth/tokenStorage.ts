@@ -1,5 +1,5 @@
-import _ = require('lodash');
-import Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird';
 import {logger} from '../logging';
 import pgAsync from '../storage/pgAsync';
 import {TokenInfo, TokenUserInfo, ClientAuthorizationInfo} from './models';

@@ -1,4 +1,4 @@
-import nconfImport = require('nconf');
+import * as nconfImport from 'nconf';
 
 export const nconf = nconfImport;
 

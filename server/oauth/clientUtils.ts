@@ -1,5 +1,5 @@
-import url = require('url');
-import _ = require('lodash');
+import * as url from 'url';
+import * as _ from 'lodash';
 import Result from '../result';
 import {RedirectUri} from './models';
 import {logger} from '../logging';

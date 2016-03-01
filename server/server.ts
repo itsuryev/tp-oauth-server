@@ -1,6 +1,6 @@
-import path = require('path');
-import createServer from './serverFactory';
+import * as path from 'path';
+import ServerFactory from './serverFactory';
 
-createServer({
+ServerFactory.createServer({
     configFileName: path.resolve(__dirname, '../build/config.private.json')
 });

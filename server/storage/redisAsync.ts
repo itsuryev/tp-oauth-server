@@ -1,6 +1,6 @@
-import _ = require('lodash');
-import redis = require('redis');
-import Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as redis from 'redis';
+import * as Promise from 'bluebird';
 import {nconf} from '../configuration';
 
 Promise.promisifyAll((redis as any).RedisClient.prototype);

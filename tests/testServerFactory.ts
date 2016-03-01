@@ -1,13 +1,13 @@
-import path = require('path');
-import _ = require('lodash');
+import * as path from 'path';
+import * as _ from 'lodash';
 import {logger} from '../server/logging';
 import {nconf} from '../server/configuration';
-import serverFactory from '../server/serverFactory';
+import ServerFactory from '../server/serverFactory';
 
 export default function createTestServer() {
     logger.level = 'warn';
 
-    const server = serverFactory({
+    const server = ServerFactory.createServer({
         configFileName: path.resolve(__dirname, './config.tests.json')
     });
 

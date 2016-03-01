@@ -1,5 +1,5 @@
-import _ = require('lodash');
-import Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird';
 import {ClientInfo} from './models';
 import pgAsync from '../storage/pgAsync';
 

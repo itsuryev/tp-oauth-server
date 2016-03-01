@@ -1,6 +1,6 @@
 import {Request} from 'express';
-import rp = require('request-promise');
-import Promise = require('bluebird');
+import * as rp from 'request-promise';
+import * as Promise from 'bluebird';
 import {logger} from './logging';
 import {nconf} from './configuration';
 import {TpUserInfo} from './oauth/models';

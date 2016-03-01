@@ -1,5 +1,5 @@
-import _ = require('lodash');
-import url = require('url');
+import * as _ from 'lodash';
+import * as url from 'url';
 
 export class RedirectUri {
     private _path: string;

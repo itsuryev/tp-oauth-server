@@ -13,6 +13,7 @@
             true,
             "react"
         ],
+        "no-require-imports": true,
         "no-duplicate-variable": true,
         "no-eval": true,
         "no-internal-module": true,

@@ -1,7 +1,6 @@
 /// <reference path="../../typings/main.d.ts" />
-import _ = require('lodash');
-
-import chai = require('chai');
+import * as _ from 'lodash';
+import * as chai from 'chai';
 const expect = chai.expect;
 
 import {RedirectUri} from '../../server/oauth/models';

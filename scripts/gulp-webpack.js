@@ -19,7 +19,7 @@ const backendConfig = {
     module: {
         loaders: [
             { test: /\.json$/, loader: 'json-loader', exclude: globalExclude },
-            { test: /\.ts$/, loader: 'ts-loader', exclude: globalExclude }
+            { test: /\.ts$/, loader: 'babel?presets[]=es2015!ts-loader', exclude: globalExclude }
         ]
     },
     plugins: [

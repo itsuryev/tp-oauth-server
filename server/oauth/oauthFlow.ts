@@ -1,4 +1,4 @@
-import Promise = require('bluebird');
+import * as Promise from 'bluebird';
 
 import {Request} from 'express';
 import oauthClientUtils from './clientUtils';

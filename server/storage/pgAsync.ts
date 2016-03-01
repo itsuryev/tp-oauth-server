@@ -1,5 +1,5 @@
-import pg = require('pg');
-import Promise = require('bluebird');
+import * as pg from 'pg';
+import * as Promise from 'bluebird';
 
 import {nconf} from '../configuration';
 

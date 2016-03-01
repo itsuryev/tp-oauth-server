@@ -1,7 +1,7 @@
 /// <reference path="../../typings/main.d.ts" />
 
-import Promise = require('bluebird');
-import request = require('supertest');
+import * as Promise from 'bluebird';
+import * as request from 'supertest';
 import testServerFactory from '../testServerFactory';
 
 import TokenStorage from '../../server/oauth/tokenStorage';
@@ -9,7 +9,7 @@ import {ClientStorage} from '../../server/oauth/clientStorage';
 import pgAsync from '../../server/storage/pgAsync';
 import {nconf} from '../../server/configuration';
 
-import chai = require('chai');
+import * as chai from 'chai';
 
 const expect = chai.expect;
 
@@ -84,7 +84,7 @@ describe('controllers/clients', () => {
                 .then(() => insertClient(clients[0]))
                 .then(() => insertClient(clients[1]))
                 .then(() => getJsonFromServer('/api/clients'))
-                .then(response => {
+                .then((response: any) => {
                     const items = response.items;
                     assertClientInfoEquality(clients[0], items[0]);
                     assertClientInfoEquality(clients[1], items[1]);

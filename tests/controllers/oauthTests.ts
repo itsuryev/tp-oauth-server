@@ -1,13 +1,13 @@
 /// <reference path="../../typings/main.d.ts" />
 
-import request = require('supertest');
+import * as request from 'supertest';
 import testServerFactory from '../testServerFactory';
 
 import TokenStorage from '../../server/oauth/tokenStorage';
 import pgAsync from '../../server/storage/pgAsync';
 import {nconf} from '../../server/configuration';
 
-import chai = require('chai');
+import * as chai from 'chai';
 const expect = chai.expect;
 
 describe('controllers/oauth', () => {

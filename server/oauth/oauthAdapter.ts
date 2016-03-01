@@ -1,4 +1,4 @@
-import oauthserver = require('oauth2-server');
+import * as oauthserver from 'oauth2-server';
 import {Request} from 'express';
 import {logger} from '../logging';
 import {ClientStorage} from './clientStorage';

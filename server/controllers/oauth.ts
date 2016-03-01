@@ -1,7 +1,7 @@
-import _ = require('lodash');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird';
+import * as oauthserver from 'oauth2-server';
 import {Express, Request} from 'express';
-import Promise = require('bluebird');
-import oauthserver = require('oauth2-server');
 import {logger} from '../logging';
 import redisAsync from '../storage/redisAsync';
 import pgAsync from '../storage/pgAsync';

@@ -1,5 +1,5 @@
-import winston = require('winston');
-import path = require('path');
+import * as winston from 'winston';
+import * as path from 'path';
 export const logger = winston;
 
 const isProduction = process.env.NODE_ENV === 'production';

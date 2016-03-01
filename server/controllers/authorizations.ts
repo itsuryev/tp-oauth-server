@@ -1,5 +1,5 @@
 import {Express, Request} from 'express';
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 import TokenStorage from '../oauth/tokenStorage';
 import {jsonError, authorizeUser, getTpUserFromRequest} from './shared';
