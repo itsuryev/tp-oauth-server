@@ -10,15 +10,11 @@ Promise.promisifyAll(pg.Query);
 Promise.promisifyAll(pg);
 
 export default class PostgresAsync {
-    static async doWithPgClient<T>(f: (c: any) => Promise<any>) {
+    static doWithPgClient<T>(f: (c: any) => Promise<any>) {
         const connectionString = nconf.get('postgresConnectionString');
-
-        const client = await (pg as any).connectAsync(connectionString);
-        try {
-            return await f(client);
-        } finally {
-            client.end();
-        }
+        return (pg as any)
+            .connectAsync(connectionString)
+            .then(client => f(client).finally(() => client.end()));
     }
 
     static ping(): Promise<void> {

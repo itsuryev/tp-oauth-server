@@ -5,13 +5,18 @@ import {TpUserInfo} from '../oauth/models';
 
 const REQUEST_TP_USER_FIELD = 'tpUser';
 
+export const wrap = fn => (...args) => fn(...args).catch(args[2]);
+
+export function useErrorPage(req: Request, res: Response, next): void {
+    res['useErrorPageEnabled'] = true;
+    next();
+}
+
 export function renderError(res: Response, message: string): void {
-    logger.error(message);
     res.render('pages/oauth-error', {message});
 }
 
 export function jsonError(res: Response, error, statusCode: number = 500): void {
-    logger.error(error);
     res.status(statusCode).json(error);
 }
 
@@ -54,7 +59,7 @@ export function authorizeUser(req: Request, res: Response, next): void {
         .then(next)
         .catch(err => {
             logger.error('oauth.authorizeUser', err);
-            res.status(500).json(err);
+            jsonError(res, err);
         });
 }
 

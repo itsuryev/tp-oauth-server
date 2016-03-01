@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as redis from 'redis';
 import * as Promise from 'bluebird';
 import {nconf} from '../configuration';

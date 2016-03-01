@@ -5,6 +5,7 @@ import * as bodyParser from 'body-parser';
 
 import {logger} from './logging';
 import {nconf, initConfig} from './configuration';
+import {renderError, jsonError} from './controllers/shared';
 
 import initOAuthController from './controllers/oauth';
 import initClientsController from './controllers/clients';
@@ -38,6 +39,21 @@ export default class ServerFactory {
         initOAuthController(app);
         initClientsController(app);
         initAuthorizationsController(app);
+
+        app.use((err: Error, req: express.Request, res: express.Response, next) => {
+            logger.error(`${req.method} ${req.url}`, err);
+
+            if (res.headersSent) {
+                return next(err);
+            }
+
+            // TODO: maybe also check 'Accept' header?
+            if (res['useErrorPageEnabled']) {
+                renderError(res, err.toString());
+            } else {
+                jsonError(res, err);
+            }
+        });
 
         const PORT = nconf.get('port');
         const IP = nconf.get('ip');

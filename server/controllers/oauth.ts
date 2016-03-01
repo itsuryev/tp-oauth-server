@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
 import * as oauthserver from 'oauth2-server';
-import {Express, Request} from 'express';
+import {Express, Request, Response} from 'express';
 import {logger} from '../logging';
 import redisAsync from '../storage/redisAsync';
 import pgAsync from '../storage/pgAsync';
@@ -9,7 +9,7 @@ import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
 import TokenStorage from '../oauth/tokenStorage';
 import UserInfoProvider from '../userInfoProvider';
-import {renderError, jsonError, authorizeUserWithRedirect} from './shared';
+import {wrap, useErrorPage, jsonError, authorizeUserWithRedirect} from './shared';
 import PromiseUtils from '../utils/promise';
 
 export default function init(app: Express) {
@@ -21,14 +21,14 @@ export default function init(app: Express) {
         debug: process.env.NODE_ENV !== 'production'
     });
 
-    app.get('/tp_oauth/:accountName/status', (req: Request, res) => {
+    app.get('/tp_oauth/:accountName/status', wrap(async (req: Request, res) => {
         function safePing(pingPromise, getResult = null) {
             return PromiseUtils.wrapSafe(pingPromise, getResult || (x => 'OK'));
         }
 
         const join: Function = Promise.join;
 
-        join(
+        await join(
             safePing(pgAsync.ping()), safePing(redisAsync.ping()), safePing(UserInfoProvider.getUserInfoFromRequest(req), x => x),
             (pgPing, redisPing, userInfo) => {
                 res.json({
@@ -37,44 +37,36 @@ export default function init(app: Express) {
                     userInfo: userInfo,
                     accountName: UserInfoProvider.getAccountName(req)
                 });
-            })
-            .catch(err => jsonError(res, err));
-    });
+            });
+    }));
 
     app.all('/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get('/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req: Request, res, next) => {
-        oauthFlow
-            .getAuthorizationRequest(req)
-            .then(authRequest => {
-                const clientInfo = authRequest.clientInfo;
+    app.get('/tp_oauth/:accountName/authorize', useErrorPage, authorizeUserWithRedirect, wrap(async (req: Request, res, next) => {
+        const authRequest = await oauthFlow.getAuthorizationRequest(req);
+        const clientInfo = authRequest.clientInfo;
 
-                // Try to automatically allow if user has already authorized the client before
-                // It's important to ensure that redirect_uri of request is the same as the one specified in client info,
-                // to prevent authorizing anyone who knows some client_id.
+        // Try to automatically allow if user has already authorized the client before
+        // It's important to ensure that redirect_uri of request is the same as the one specified in client info,
+        // to prevent authorizing anyone who knows some client_id.
 
-                TokenStorage
-                    .getAccessTokenForClientAndUser(clientInfo.clientId, authRequest.user)
-                    .then(existingToken => {
-                        if (!existingToken) {
-                            return res.render('pages/oauth-authorize', {
-                                clientId: clientInfo.clientId,
-                                clientName: clientInfo.name,
-                                redirectUri: authRequest.redirectUri
-                            });
-                        }
+        const existingToken = await TokenStorage.getAccessTokenForClientAndUser(clientInfo.clientId, authRequest.user);
+        if (!existingToken) {
+            return res.render('pages/oauth-authorize', {
+                clientId: clientInfo.clientId,
+                clientName: clientInfo.name,
+                redirectUri: authRequest.redirectUri
+            });
+        }
 
-                        const nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
-                            next(null, true, authRequest.user);
-                        });
+        const nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
+            next(null, true, authRequest.user);
+        });
 
-                        nextMiddleware(req, res, next);
-                    });
-            })
-            .catch(err => renderError(res, err));
-    });
+        nextMiddleware(req, res, next);
+    }));
 
-    app.post('/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req, res, next) => {
+    app.post('/tp_oauth/:accountName/authorize', useErrorPage, authorizeUserWithRedirect, (req, res, next) => {
         // todo: CSRF handling
         // todo: clickjacking
 
@@ -83,32 +75,31 @@ export default function init(app: Express) {
         next(null, req.body.allow === 'yes', req['tpUser']);
     }));
 
-    app.get('/tp_oauth/:accountName/tokens/:token', (req, res) => {
+    app.get('/tp_oauth/:accountName/tokens/:token', wrap(async (req: Request, res: Response) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
             logger.error('Invalid token parameter. Should be a non-empty string', {token});
-            return jsonError(res, {message: 'Invalid token parameter. Should be a non-empty string.'}, 400);
+            jsonError(res, {message: 'Invalid token parameter. Should be a non-empty string.'}, 400);
+            return;
         }
 
-        TokenStorage
-            .getAccessToken(token)
-            .then(tokenInfo => tokenInfo.user)
-            .then(userInfo => {
-                if (!userInfo) {
-                    return res.json({
-                        status: 'error',
-                        message: 'Specified token does not exist'
-                    });
-                }
+        const tokenInfo = await TokenStorage.getAccessToken(token);
+        const userInfo = tokenInfo ? tokenInfo.user : null;
+        if (!userInfo) {
+            logger.debug('Specified token does not exist');
+            res.json({
+                status: 'error',
+                message: 'Specified token does not exist'
+            });
+            return;
+        }
 
-                res.json({
-                    status: 'ok',
-                    token: {
-                        userId: userInfo.id,
-                        accountName: userInfo.accountName
-                    }
-                });
-            })
-            .catch(err => jsonError(res, err));
-    });
+        res.json({
+            status: 'ok',
+            token: {
+                userId: userInfo.id,
+                accountName: userInfo.accountName
+            }
+        });
+    }));
 };

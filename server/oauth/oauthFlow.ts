@@ -8,45 +8,42 @@ import {getTpUserFromRequest} from '../controllers/shared';
 import {logger} from '../logging';
 
 export default {
-    getAuthorizationRequest(req: Request): Promise<AuthorizationRequest> {
+    async getAuthorizationRequest(req: Request): Promise<AuthorizationRequest> {
         const responseType = req.query.response_type;
         // todo: shouldn't the lib handle it?
         if (responseType !== 'code') {
-            return Promise.reject('Invalid response_type parameter (must be "code")');
+            throw new Error('Invalid response_type parameter (must be "code")');
         }
 
         const user = getTpUserFromRequest(req);
         if (!user) {
             logger.error('getAuthorizationRequest: User is not set');
-            return Promise.reject('User is not set');
+            throw new Error('User is not set');
         }
 
         const clientId = req.query.client_id;
 
-        return ClientStorage
-            .getClientByIdAsync(clientId)
-            .then(storedClientInfo => {
-                if (!storedClientInfo) {
-                    return Promise.reject('Client with specified ID does not exist');
-                }
+        const storedClientInfo = await ClientStorage.getClientByIdAsync(clientId);
+        if (!storedClientInfo) {
+            throw new Error('Client with specified ID does not exist');
+        }
 
-                const redirectUriValue: string = req.query.redirect_uri;
-                const redirectUriValidationError = RedirectUri.validateUriPath(redirectUriValue);
-                if (redirectUriValidationError) {
-                    return Promise.reject(redirectUriValidationError);
-                }
+        const redirectUriValue: string = req.query.redirect_uri;
+        const redirectUriValidationError = RedirectUri.validateUriPath(redirectUriValue);
+        if (redirectUriValidationError) {
+            throw redirectUriValidationError;
+        }
 
-                const uriVerification = oauthClientUtils.tryGetFinalRedirectUri(
-                    new RedirectUri(storedClientInfo.redirectUri), new RedirectUri(redirectUriValue));
-                if (uriVerification.error) {
-                    return Promise.reject(uriVerification.error);
-                }
+        const uriVerification = oauthClientUtils.tryGetFinalRedirectUri(
+            new RedirectUri(storedClientInfo.redirectUri), new RedirectUri(redirectUriValue));
+        if (uriVerification.error) {
+            throw uriVerification.error;
+        }
 
-                return {
-                    clientInfo: storedClientInfo,
-                    redirectUri: uriVerification.value,
-                    user
-                };
-            });
+        return {
+            clientInfo: storedClientInfo,
+            redirectUri: uriVerification.value,
+            user
+        };
     }
 };
