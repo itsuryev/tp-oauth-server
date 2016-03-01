@@ -19,6 +19,10 @@ Server is built with TypeScript, and [typings](https://github.com/typings/typing
     npm install -g typings
     typings install
 
+Gulp is used for task running
+
+    npm install -g gulp-cli
+
 Nodemon is used to start and restart server when source code changes
 
     npm install -g nodemon
