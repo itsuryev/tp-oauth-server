@@ -1,3 +1,4 @@
 import './controllers/oauthTests';
 import './oauth/redirectUriTests';
-import './controllers/clients';
+import './oauth/tokensTests';
+import './controllers/clientsTests';

@@ -1,6 +1,5 @@
 /// <reference path="../../typings/main.d.ts" />
 
-import _ = require('lodash');
 import Promise = require('bluebird');
 import request = require('supertest');
 import testServerFactory from '../testServerFactory';
@@ -11,6 +10,7 @@ import pgAsync from '../../server/storage/pgAsync';
 import {nconf} from '../../server/configuration';
 
 import chai = require('chai');
+
 const expect = chai.expect;
 
 interface TestClientInfo {
@@ -45,10 +45,14 @@ describe('controllers/clients', () => {
         });
     }
 
-    function insertClient(pgClient, {clientId, name, redirectUri, description}) {
-        return pgClient.queryAsync(
-            'INSERT INTO clients (client_key, name, client_secret, redirect_uri, description) VALUES ($1, $2, $3, $4, $5)',
-            [clientId, name, clientId + 'secret', redirectUri, description]);
+    function insertClient({clientId, name, redirectUri, description}) {
+        return ClientStorage.createClient({
+            clientId,
+            clientSecret: clientId + 'secret',
+            name,
+            redirectUri,
+            description
+        });
     }
 
     function assertClientInfoEquality(expected: TestClientInfo, actual) {
@@ -75,11 +79,10 @@ describe('controllers/clients', () => {
                 }
             ];
 
-            pgAsync
-                .doWithPgClient(pgClient => pgClient
-                    .queryAsync('DELETE FROM clients')
-                    .then(() => insertClient(pgClient, clients[0]))
-                    .then(() => insertClient(pgClient, clients[1])))
+            ClientStorage
+                .deleteAllClientsExtremelyUnsafePrepareToSuffer()
+                .then(() => insertClient(clients[0]))
+                .then(() => insertClient(clients[1]))
                 .then(() => getJsonFromServer('/api/clients'))
                 .then(response => {
                     const items = response.items;

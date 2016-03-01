@@ -1,4 +1,4 @@
-import {Express, Request, Response} from 'express';
+import {Request, Response} from 'express';
 import {logger} from '../logging';
 import UserInfoProvider from '../userInfoProvider';
 import {TpUserInfo} from '../oauth/models';
@@ -6,11 +6,13 @@ import {TpUserInfo} from '../oauth/models';
 const REQUEST_TP_USER_FIELD = 'tpUser';
 
 export function renderError(res: Response, message: string): void {
+    logger.error(message);
     res.render('pages/oauth-error', {message});
 }
 
-export function jsonError(res: Response, error): void {
-    res.status(500).json(error);
+export function jsonError(res: Response, error, statusCode: number = 500): void {
+    logger.error(error);
+    res.status(statusCode).json(error);
 }
 
 function authorizeUserCore(onUnauthorized: Function, req: Request): Promise<any> {

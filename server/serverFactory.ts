@@ -1,14 +1,8 @@
-import Promise = require('bluebird');
 import express = require('express');
-import Request = Express.Request;
 import bodyParser = require('body-parser');
 
 import {logger} from './logging';
 import {nconf, initConfig} from './configuration';
-
-import {ClientStorage} from './oauth/clientStorage';
-import UserInfoProvider from './userInfoProvider';
-import RedisAsync from './storage/redisAsync';
 
 import initOAuthController from './controllers/oauth';
 import initClientsController from './controllers/clients';
@@ -31,38 +25,11 @@ export default function createServer({configFileName}) {
     app.use(bodyParser.json());
     app.set('view engine', 'ejs');
 
-    function getInfo(req: express.Request, res: express.Response) {
-        const accountName = UserInfoProvider.getAccountName(req);
-
-        function send(userInfo) {
-            res.json({
-                userId: userInfo.id,
-                accountName: accountName,
-                NODE_ENV: process.env.NODE_ENV || '<unset>',
-                requestUrl: req.url,
-                accountResolver: nconf.get('accountResolver'),
-                postgres: nconf.get('postgresConnectionString'),
-                redis: RedisAsync.redisConnectionText,
-                cookie: userInfo.cookie
-            });
-        }
-
-        UserInfoProvider
-            .getUserInfoFromRequest(req)
-            .then(userInfo => send(userInfo))
-            .catch(err => send({id: 'Unable to retrieve user info'}));
-    }
-
-    const URL_PREFIX = nconf.get('urlPrefix');
-
-    app.get(URL_PREFIX + '/', getInfo);
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/', getInfo);
-
-    app.get(URL_PREFIX + '/test/:accountName', (req: express.Request, res) => {
-        UserInfoProvider
-            .getUserInfoFromRequest(req)
-            .then(userInfo => res.json(userInfo))
-            .catch(err => res.status(500).json(err));
+    app.get('/', (req, res) => {
+        res.json({
+            NODE_ENV: process.env.NODE_ENV || '<unset>',
+            accountResolver: nconf.get('accountResolver')
+        });
     });
 
     initOAuthController(app);

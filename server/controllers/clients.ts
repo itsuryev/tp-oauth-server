@@ -1,12 +1,9 @@
-import {nconf} from '../configuration';
-import {Express, Request} from 'express';
-import {ClientQuerySpec, ClientStorage} from '../oauth/clientStorage';
+import {Express} from 'express';
+import {ClientStorage} from '../oauth/clientStorage';
 import {logger} from '../logging';
 
 export default function init(app: Express) {
-    const URL_PREFIX = nconf.get('urlPrefix');
-
-    app.get(URL_PREFIX + '/api/clients', (req, res) => {
+    app.get('/api/clients', (req, res) => {
         ClientStorage
             .getClients({
                 skip: req.query.skip,

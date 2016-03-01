@@ -9,6 +9,10 @@
             true,
             "spaces"
         ],
+        "no-unused-variable": [
+            true,
+            "react"
+        ],
         "no-duplicate-variable": true,
         "no-eval": true,
         "no-internal-module": true,

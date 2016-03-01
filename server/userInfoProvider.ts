@@ -1,6 +1,5 @@
 import {Request} from 'express';
 import rp = require('request-promise');
-import http = require('http');
 import Promise = require('bluebird');
 import {logger} from './logging';
 import {nconf} from './configuration';

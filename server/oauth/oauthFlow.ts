@@ -3,7 +3,7 @@ import Promise = require('bluebird');
 import {Request} from 'express';
 import oauthClientUtils from './clientUtils';
 import {ClientStorage} from './clientStorage';
-import {ClientInfo, RedirectUri, AuthorizationRequest} from './models';
+import {RedirectUri, AuthorizationRequest} from './models';
 import {getTpUserFromRequest} from '../controllers/shared';
 import {logger} from '../logging';
 

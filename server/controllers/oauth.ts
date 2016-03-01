@@ -1,21 +1,18 @@
 import _ = require('lodash');
-import {Express, Request, Response} from 'express';
+import {Express, Request} from 'express';
 import Promise = require('bluebird');
 import oauthserver = require('oauth2-server');
 import {logger} from '../logging';
-import {nconf} from '../configuration';
 import redisAsync from '../storage/redisAsync';
 import pgAsync from '../storage/pgAsync';
-import {TokenUserInfo} from '../oauth/models';
 import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
 import TokenStorage from '../oauth/tokenStorage';
 import UserInfoProvider from '../userInfoProvider';
-import {renderError, authorizeUserWithRedirect} from './shared';
+import {renderError, jsonError, authorizeUserWithRedirect} from './shared';
+import PromiseUtils from '../utils/promise';
 
 export default function init(app: Express) {
-    const URL_PREFIX = nconf.get('urlPrefix');
-
     const appOAuth = oauthserver({
         model: new OAuthModel(),
         grants: ['authorization_code'],
@@ -24,11 +21,9 @@ export default function init(app: Express) {
         debug: process.env.NODE_ENV !== 'production'
     });
 
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/status', (req: Request, res) => {
+    app.get('/tp_oauth/:accountName/status', (req: Request, res) => {
         function safePing(pingPromise, getResult = null) {
-            return new Promise(resolve => {
-                pingPromise.then(res => resolve(getResult ? getResult(res) : 'OK')).catch(err => resolve(err.toString()));
-            });
+            return PromiseUtils.wrapSafe(pingPromise, getResult || (x => 'OK'));
         }
 
         const join: Function = Promise.join;
@@ -43,12 +38,12 @@ export default function init(app: Express) {
                     accountName: UserInfoProvider.getAccountName(req)
                 });
             })
-            .catch(err => res.json(err));
+            .catch(err => jsonError(res, err));
     });
 
-    app.all(URL_PREFIX + '/tp_oauth/:accountName/access_token', appOAuth.grant());
+    app.all('/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req: Request, res, next) => {
+    app.get('/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req: Request, res, next) => {
         oauthFlow
             .getAuthorizationRequest(req)
             .then(authRequest => {
@@ -79,7 +74,7 @@ export default function init(app: Express) {
             .catch(err => renderError(res, err));
     });
 
-    app.post(URL_PREFIX + '/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req, res, next) => {
+    app.post('/tp_oauth/:accountName/authorize', authorizeUserWithRedirect, (req, res, next) => {
         // todo: CSRF handling
         // todo: clickjacking
 
@@ -88,10 +83,11 @@ export default function init(app: Express) {
         next(null, req.body.allow === 'yes', req['tpUser']);
     }));
 
-    app.get(URL_PREFIX + '/tp_oauth/:accountName/tokens/:token', (req, res) => {
+    app.get('/tp_oauth/:accountName/tokens/:token', (req, res) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
-            return res.status(400).send('Invalid token parameter. Should be a non-empty string.');
+            logger.error('Invalid token parameter. Should be a non-empty string', {token});
+            return jsonError(res, {message: 'Invalid token parameter. Should be a non-empty string.'}, 400);
         }
 
         TokenStorage
@@ -113,6 +109,6 @@ export default function init(app: Express) {
                     }
                 });
             })
-            .catch(err => res.status(500).send(err));
+            .catch(err => jsonError(res, err));
     });
 };

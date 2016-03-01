@@ -1,11 +1,9 @@
 /// <reference path="../../typings/main.d.ts" />
 
-import _ = require('lodash');
 import request = require('supertest');
 import testServerFactory from '../testServerFactory';
 
 import TokenStorage from '../../server/oauth/tokenStorage';
-import {ClientStorage} from '../../server/oauth/clientStorage';
 import pgAsync from '../../server/storage/pgAsync';
 import {nconf} from '../../server/configuration';
 

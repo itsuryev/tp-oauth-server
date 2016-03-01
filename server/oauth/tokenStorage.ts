@@ -10,7 +10,7 @@ function getClientDbId(pgClient, clientId: string): Promise<number> {
         .clientByIdGetter(pgClient, clientId)
         .then(clientInfo => {
             if (!clientInfo) {
-                return Promise.reject('Client with specified clientId does not exist');
+                return Promise.reject<number>('Client with specified clientId does not exist');
             }
 
             return clientInfo.id;
@@ -42,13 +42,14 @@ export default {
     },
 
     getAccessToken(bearerToken: string): Promise<TokenInfo> {
-        logger.debug('Enter TokenStorage.getAccessToken', {bearerToken});
+        logger.debug('TokenStorage.getAccessToken: Enter', {bearerToken});
         return pgAsync
             .doWithPgClient(client => {
-                return client.queryAsync('SELECT at.token, at.account_name, at.user_id FROM access_tokens INNER JOIN clients c ON at.client_id = c.id AND c.delete_date IS NULL AND at.token = $1 LIMIT 1', [bearerToken]);
+                return client.queryAsync('SELECT at.token, at.account_name, at.user_id FROM access_tokens at INNER JOIN clients c ON at.client_id = c.id AND c.delete_date IS NULL AND at.token = $1 LIMIT 1', [bearerToken]);
             })
             .then(result => {
                 if (!result.rowCount) {
+                    logger.debug('TokenStorage.getAccessToken: No such token');
                     return null;
                 }
 
@@ -58,6 +59,7 @@ export default {
                     expires: null,
                     token: tokenRow.token
                 };
+                logger.debug('TokenStorage.getAccessToken: Found token', tokenInfo);
                 return tokenInfo;
             });
     },

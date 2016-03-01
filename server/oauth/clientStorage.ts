@@ -1,6 +1,6 @@
 import _ = require('lodash');
 import Promise = require('bluebird');
-import {ClientInfo, RedirectUri} from './models';
+import {ClientInfo} from './models';
 import pgAsync from '../storage/pgAsync';
 
 export class ClientQuerySpec {
@@ -47,6 +47,16 @@ export class ClientStorage {
     }
 
     static getClientByIdAsync(clientId: string): Promise<ClientInfo> {
-        return pgAsync.doWithPgClient(client => ClientStorage.clientByIdGetter(client, clientId));
+        return pgAsync.doWithPgClient(pg => ClientStorage.clientByIdGetter(pg, clientId));
+    }
+
+    static createClient({clientId, name, clientSecret, redirectUri, description}): Promise<void> {
+        return pgAsync.doWithPgClient(pg => pg.queryAsync(
+            'INSERT INTO clients (client_key, name, client_secret, redirect_uri, description) VALUES ($1, $2, $3, $4, $5)',
+            [clientId, name, clientSecret, redirectUri, description]));
+    }
+
+    static deleteAllClientsExtremelyUnsafePrepareToSuffer() {
+        return pgAsync.doWithPgClient(pg => pg.queryAsync('DELETE FROM clients'));
     }
 }

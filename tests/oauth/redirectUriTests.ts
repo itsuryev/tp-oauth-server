@@ -49,23 +49,6 @@ describe('Redirect URI', () => {
 
     describe('Determine final redirect URI', () => {
 
-        function shouldAllow(stored, requested) {
-            const storedUri = new RedirectUri(stored);
-            const requestedUri = new RedirectUri(requested);
-            const result = ClientUtils.tryGetFinalRedirectUri(storedUri, requestedUri);
-            console.log(result.error);
-            expectNull(result.error);
-            expect(result.value.getPath()).to.be.equal(requested);
-        }
-
-        function shouldNotAllow(stored, requested) {
-            const storedUri = new RedirectUri(stored);
-            const requestedUri = new RedirectUri(requested);
-            const result = ClientUtils.tryGetFinalRedirectUri(storedUri, requestedUri);
-            console.log(result.error);
-            expectNotNull(result.error);
-        }
-
         function pair(stored: string, requested: string, output = null) {
             return {
                 stored,

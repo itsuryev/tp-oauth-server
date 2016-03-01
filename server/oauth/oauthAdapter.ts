@@ -1,5 +1,4 @@
 import oauthserver = require('oauth2-server');
-import Promise = require('bluebird');
 import {Request} from 'express';
 import {logger} from '../logging';
 import {ClientStorage} from './clientStorage';

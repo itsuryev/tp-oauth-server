@@ -1,6 +1,4 @@
 import nconfImport = require('nconf');
-import fs = require('fs');
-import path = require('path');
 
 export const nconf = nconfImport;
 
@@ -31,10 +29,6 @@ export function initConfig(configFileName: string) {
             // Can be used to avoid any user authentication with Targetprocess instance.
             // Specified value will always be substituted instead of actual user ID.
             // Should be used for testing only
-            // devModeFakeUserIdToSkipAuthentication: 1,
-
-            // A prefix to prepend to all routes of this app.
-            // Might be required when app is served from some virtual directory.
-            urlPrefix: ''
+            // devModeFakeUserIdToSkipAuthentication: 1
         });
 }
