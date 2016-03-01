@@ -5,22 +5,6 @@ import {logger} from './logging';
 import {nconf} from './configuration';
 import {TpUserInfo} from './oauth/models';
 
-function buildAccountUrl(accountName: string): string {
-    const accountResolver = nconf.get('accountResolver');
-    switch (accountResolver) {
-        case 'localhost':
-            return 'http://localhost/targetprocess';
-        case 'tpminsk.by':
-        case 'tpondemand.net':
-        case 'tpondemand.com':
-            // TODO: HTTPS support
-            return `http://${accountName}.${accountResolver}`;
-        default:
-            logger.error('Unknown accountResolver', {accountResolver});
-            throw new Error('Unknown accountResolver');
-    }
-}
-
 export default class UserInfoProvider {
     static getUserInfoFromRequest(req: Request): Promise<TpUserInfo> {
         logger.debug('Enter getUserInfoFromRequest');
@@ -29,6 +13,22 @@ export default class UserInfoProvider {
         const accountName = UserInfoProvider.getAccountName(req);
 
         return UserInfoProvider._getUserInfo(req, accountName);
+    }
+
+    static buildAccountUrl(accountName: string): string {
+        const accountResolver = nconf.get('accountResolver');
+        switch (accountResolver) {
+            case 'localhost':
+                return 'http://localhost/targetprocess';
+            case 'tpminsk.by':
+            case 'tpondemand.net':
+            case 'tpondemand.com':
+                // TODO: HTTPS support
+                return `http://${accountName}.${accountResolver}`;
+            default:
+                logger.error('Unknown accountResolver', {accountResolver});
+                throw new Error('Unknown accountResolver');
+        }
     }
 
     private static _getUserInfo(req: Request, accountName: string): Promise<TpUserInfo> {
@@ -62,7 +62,9 @@ export default class UserInfoProvider {
             }
         };
 
-        return rp(`${buildAccountUrl(accountName)}/api/v1/Users/LoggedUser`, options)
+        const accountUrl = UserInfoProvider.buildAccountUrl(accountName);
+
+        return rp(`${accountUrl}/api/v1/Users/LoggedUser`, options)
             .then(response => {
                 logger.debug('Got auth response from TP');
 
