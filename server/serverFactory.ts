@@ -2,6 +2,7 @@ import 'babel-polyfill';
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as methodOverride from 'method-override';
 
 import {logger} from './logging';
 import {nconf, initConfig} from './configuration';
@@ -20,6 +21,9 @@ export default class ServerFactory {
 
         const app = express();
 
+        app.use(methodOverride('X-HTTP-Method-Override'));
+        app.use(methodOverride('X-HTTP-Method'));
+        
         app.use((req, res, next) => {
             logger.debug(`~ ${req.method} ${req.url}`);
             next();
