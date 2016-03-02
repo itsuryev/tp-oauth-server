@@ -4,6 +4,7 @@ import * as Promise from 'bluebird';
 import {logger} from './logging';
 import {nconf} from './configuration';
 import {TpUserInfo} from './oauth/models';
+import * as AccountInfo from './integration/accountInfo';
 
 export default class UserInfoProvider {
     static getUserInfoFromRequest(req: Request): Promise<TpUserInfo> {
@@ -13,22 +14,6 @@ export default class UserInfoProvider {
         const accountName = UserInfoProvider.getAccountName(req);
 
         return UserInfoProvider._getUserInfo(req, accountName);
-    }
-
-    static buildAccountUrl(accountName: string): string {
-        const accountResolver = nconf.get('accountResolver');
-        switch (accountResolver) {
-            case 'localhost':
-                return 'http://localhost/targetprocess';
-            case 'tpminsk.by':
-            case 'tpondemand.net':
-            case 'tpondemand.com':
-                // TODO: HTTPS support
-                return `http://${accountName}.${accountResolver}`;
-            default:
-                logger.error('Unknown accountResolver', {accountResolver});
-                throw new Error('Unknown accountResolver');
-        }
     }
 
     private static _getUserInfo(req: Request, accountName: string): Promise<TpUserInfo> {
@@ -62,7 +47,7 @@ export default class UserInfoProvider {
             }
         };
 
-        const accountUrl = UserInfoProvider.buildAccountUrl(accountName);
+        const accountUrl = AccountInfo.buildAccountUrl(AccountInfo.getAccountResolverFromConfig(), accountName);
 
         return rp(`${accountUrl}/api/v1/Users/LoggedUser`, options)
             .then(response => {
