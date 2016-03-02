@@ -2,7 +2,7 @@ const gulp = require('gulp');
 const runSequence = require('run-sequence');
 const webpackTasks = require('./scripts/gulp-webpack');
 const pgTasks = require('./scripts/gulp-pg');
-const applicationConfig = require('./build/config.private.json');
+const applicationConfig = require('./config/config.private.json');
 const testsConfig = require('./tests/config.tests.json');
 
 gulp.task('backend-build', webpackTasks.buildBackend);

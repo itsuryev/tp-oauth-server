@@ -31,7 +31,7 @@ Then:
 
     npm start
 
-Add `config.private.json` file to `/build` directory. Look up the sample format in `/build/config.example.json`.
+Add `config.private.json` file to `/config` directory. You can find the list of available options in `/server/configuration.ts`.
 
 You can also use [Sample OAuth client](https://github.com/khmylov/tp-oauth-client) to test the integration.
 
