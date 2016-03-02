@@ -8,7 +8,7 @@ export default function createTestServer() {
     logger.level = 'warn';
 
     const server = ServerFactory.createServer({
-        configFileName: path.resolve(__dirname, './config.tests.json')
+        configFileName: path.resolve(__dirname, '../config/config.tests.json')
     });
 
     nconf.set('devModeFakeUserIdToSkipAuthentication', _.uniqueId());

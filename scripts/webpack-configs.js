@@ -21,12 +21,12 @@ const backendConfig = {
         loaders: [
             { test: /\.json$/, loader: 'json-loader', exclude: globalExclude },
             { test: /\.ts$/, loader: 'babel?presets[]=es2015!ts-loader', exclude: globalExclude },
-            { test:/\.css$/, loader: ExtractTextPlugin.extract('style', 'css'), exclude: globalExclude },
+            { test: /\.css$/, loader: ExtractTextPlugin.extract('style', 'css'), exclude: globalExclude },
             { test: /\.(png|gif|jpe?g|svg)$/i, loader: 'url?limit=10000', exclude: globalExclude }
         ]
     },
     plugins: [
-        new ExtractTextPlugin('bundle-[hash].css'),
+        new ExtractTextPlugin('static/bundle-[hash].css'),
 
         require('progress-bar-webpack-plugin')({
             format: '  build [:bar] :percent (:elapsed seconds)',
@@ -65,8 +65,8 @@ if (process.env.NODE_ENV !== 'production') {
 const backendTestConfig = _.extend(_.cloneDeep(backendConfig), {
     entry: ofAppPath('tests/index.ts'),
     output: {
-        path: ofAppPath('tests'),
-        filename: 'index.js'
+        path: ofAppPath('build'),
+        filename: 'tests.js'
     }
 });
 

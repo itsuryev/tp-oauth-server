@@ -45,6 +45,6 @@
     "build": "gulp backend-build",
     "local-db": "gulp db-recreate-sample",
     "pretest": "gulp tests-prepare",
-    "test": "mocha tests"
+    "test": "mocha build/tests"
   }
 }
