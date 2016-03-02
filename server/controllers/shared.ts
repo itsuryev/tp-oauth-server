@@ -10,6 +10,8 @@ const REQUEST_TP_USER_FIELD = 'tpUser';
 export const wrap = fn => (...args) => fn(...args).catch(args[2]);
 
 function getFullUrl(req: Request) {
+    logger.debug('getFullUrl', req);
+
     return url.format({
         protocol: req.protocol,
         host: req.get('host'),
