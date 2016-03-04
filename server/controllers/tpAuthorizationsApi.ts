@@ -1,12 +1,10 @@
-import {Express, Request} from 'express';
+import {Application, Request} from 'express';
 import * as _ from 'lodash';
 
 import TokenStorage from '../oauth/tokenStorage';
 import {wrap, jsonError, authorizeUser, getTpUserFromRequest} from './shared';
 
-import '../assets/oauth-confirm/style.css';
-
-export default function init(app: Express) {
+export default function init(app: Application) {
     app.get('/tp_oauth/:accountName/authorizations', authorizeUser, wrap(async (req: Request, res) => {
         const user = getTpUserFromRequest(req);
 

@@ -6,6 +6,9 @@ const _ = require('lodash');
 const nodemon = require('nodemon');
 const webpackConfigs = require('./webpack-configs');
 
+const backendConfig = webpackConfigs.backendConfig;
+const backendTestConfig = webpackConfigs.backendTestConfig;
+
 function log() {
     console.log.apply(console, ['~webpack:'].concat(_.toArray(arguments)));
 }
@@ -26,14 +29,14 @@ function handleWebpackResults(err, stats) {
 
 module.exports = {
     buildBackend(done) {
-        webpack(webpackConfigs.backendConfig).run((err, stats) => {
+        webpack(backendConfig).run((err, stats) => {
             handleWebpackResults(err, stats);
             done();
         });
     },
 
     buildBackendTests(done) {
-        webpack(webpackConfigs.backendTestConfig).run((err, stats) => {
+        webpack(backendTestConfig).run((err, stats) => {
             handleWebpackResults(err, stats);
             done();
         });
@@ -63,7 +66,7 @@ module.exports = {
         }
 
         var completedCalled = false;
-        const backendCompiler = webpack(webpackConfigs.backendConfig);
+        const backendCompiler = webpack(backendConfig);
         backendCompiler.watch({}, (err, stats) => {
             log('Backend callback');
             handleWebpackResults(err, stats);

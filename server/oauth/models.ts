@@ -76,7 +76,10 @@ export interface TokenInfo {
 
 export interface TpUserInfo {
     id: number;
+    firstName: string;
+    lastName: string;
     accountName: string;
+    accountUrl: string;
     cookie: string;
 }
 

@@ -1,7 +1,8 @@
+import * as path from 'path';
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
 import * as oauthserver from 'oauth2-server';
-import {Express, Request, Response} from 'express';
+import * as express from 'express';
 import {logger} from '../logging';
 import redisAsync from '../storage/redisAsync';
 import pgAsync from '../storage/pgAsync';
@@ -9,19 +10,27 @@ import OAuthModel from '../oauth/oauthAdapter';
 import oauthFlow from '../oauth/oauthFlow';
 import TokenStorage from '../oauth/tokenStorage';
 import UserInfoProvider from '../userInfoProvider';
-import {wrap, useErrorPage, jsonError, authorizeUserWithRedirect} from './shared';
+import {wrap, useErrorPage, jsonError, authorizeUserWithRedirect, getTpUserFromRequest, renderReact} from './shared';
 import PromiseUtils from '../utils/promise';
 
-export default function init(app: Express) {
+import AuthorizePage from '../views/oauth/authorize';
+
+export default function init(app: express.Application) {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     const appOAuth = oauthserver({
         model: new OAuthModel(),
         grants: ['authorization_code'],
         accessTokenLifetime: null,
         authCodeLifetime: 300,
-        debug: process.env.NODE_ENV !== 'production'
+        debug: !isProduction
     });
 
-    app.get('/tp_oauth/:accountName/status', wrap(async (req: Request, res) => {
+    app.use('/tp_oauth/:accountName/static', express.static(path.resolve(__dirname, '../../build/static'), {
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    }));
+
+    app.get('/tp_oauth/:accountName/status', wrap(async (req: express.Request, res) => {
         function safePing(pingPromise, getResult = null) {
             return PromiseUtils.wrapSafe(pingPromise, getResult || (x => 'OK'));
         }
@@ -42,7 +51,7 @@ export default function init(app: Express) {
 
     app.all('/tp_oauth/:accountName/access_token', appOAuth.grant());
 
-    app.get('/tp_oauth/:accountName/authorize', useErrorPage, authorizeUserWithRedirect, wrap(async (req: Request, res, next) => {
+    app.get('/tp_oauth/:accountName/authorize', useErrorPage, authorizeUserWithRedirect, wrap(async (req: express.Request, res, next) => {
         const authRequest = await oauthFlow.getAuthorizationRequest(req);
         const clientInfo = authRequest.clientInfo;
 
@@ -52,13 +61,20 @@ export default function init(app: Express) {
 
         const existingToken = await TokenStorage.getAccessTokenForClientAndUser(clientInfo.clientId, authRequest.user);
         if (!existingToken) {
-            return res.render('pages/oauth-authorize', {
+            const tpUser = getTpUserFromRequest(req);
+            const accountUrlText = tpUser.accountUrl.replace(/^https?:\/\//, '');
+
+            return renderReact(res, AuthorizePage, {
                 clientId: clientInfo.clientId,
                 clientName: clientInfo.name,
-                redirectUri: authRequest.redirectUri
+                clientDescription: clientInfo.description || '<No description>',
+                fullUserName: `${tpUser.firstName} ${tpUser.lastName}`,
+                accountUrl: accountUrlText,
+                redirectUri: authRequest.redirectUri.getPath()
             });
         }
 
+        console.log('next middleware');
         const nextMiddleware = (appOAuth as any).authCodeGrant((req, next) => {
             next(null, true, authRequest.user);
         });
@@ -75,7 +91,7 @@ export default function init(app: Express) {
         next(null, req.body.allow === 'yes', req['tpUser']);
     }));
 
-    app.get('/tp_oauth/:accountName/tokens/:token', wrap(async (req: Request, res: Response) => {
+    app.get('/tp_oauth/:accountName/tokens/:token', wrap(async (req: express.Request, res: express.Response) => {
         const token = req.params.token;
         if (!_.isString(token) || !token.length) {
             logger.error('Invalid token parameter. Should be a non-empty string', {token});

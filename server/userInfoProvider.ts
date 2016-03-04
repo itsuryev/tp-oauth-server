@@ -22,7 +22,10 @@ export default class UserInfoProvider {
             logger.debug('Using fake user ID', fakeUserId);
             return Promise.resolve({
                 id: fakeUserId,
+                firstName: 'FakeFirst',
+                lastName: 'FakeLast',
                 accountName,
+                accountUrl: accountName,
                 cookie: ''
             });
         }
@@ -38,7 +41,7 @@ export default class UserInfoProvider {
 
         const options = {
             qs: {
-                include: '[id]',
+                include: '[id, firstName, lastName]',
                 format: 'json'
             },
             json: true,
@@ -55,7 +58,10 @@ export default class UserInfoProvider {
 
                 return {
                     id: response.Id,
-                    accountName: accountName,
+                    firstName: response.FirstName,
+                    lastName: response.LastName,
+                    accountName,
+                    accountUrl,
                     cookie: headerCookie
                 };
             });

@@ -51,7 +51,7 @@ Then, add the following config to IIS site's `web.config` (assuming that Targetp
             <rewrite>
                 <rules>
                     <rule name="oauth">
-                        <match url="^targetprocess/oauth/([\w\/]*)" />
+                        <match url="^targetprocess/oauth/(.*)" />
                         <action type="Rewrite" url="http://localhost:3000/tp_oauth/testAccountName/{R:1}" />
                     </rule>
                 </rules>

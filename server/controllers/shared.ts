@@ -5,10 +5,23 @@ import UserInfoProvider from '../userInfoProvider';
 import {TpUserInfo} from '../oauth/models';
 import * as AccountInfo from '../integration/accountInfo';
 import * as ExpressUtils from '../utils/expressUtils';
+import ErrorPage from '../views/oauth/error';
+
+import * as React from 'react';
+/* tslint:disable */
+const ReactDOMServer = require('react-dom/server');
+/* tslint:enable */
 
 const REQUEST_TP_USER_FIELD = 'tpUser';
 
 export const wrap = fn => (...args) => fn(...args).catch(args[2]);
+
+export function renderReact<P, S>(res: Response, component: React.ComponentClass<P>, props: P) {
+    const element = React.createElement(component, props);
+    const rendered = ReactDOMServer.renderToStaticMarkup(element);
+    const output = `<!DOCTYPE html>\n${rendered}`;
+    res.send(output);
+}
 
 export function useErrorPage(req: Request, res: Response, next): void {
     res['useErrorPageEnabled'] = true;
@@ -16,7 +29,9 @@ export function useErrorPage(req: Request, res: Response, next): void {
 }
 
 export function renderError(res: Response, message: string): void {
-    res.render('pages/oauth-error', {message});
+    renderReact(res, ErrorPage, {
+        message
+    });
 }
 
 export function jsonError(res: Response, error, statusCode: number = 500): void {

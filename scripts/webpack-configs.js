@@ -1,45 +1,70 @@
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
+const DeepMerge = require('deep-merge');
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const AssetsPlugin = require('assets-webpack-plugin');
+const HashPlugin = require('hash-webpack-plugin');
 
 const globalExclude = /node_modules/;
+const nodeExternals = fs.readdirSync(ofAppPath('node_modules'))
+    .filter(x => ['.bin'].indexOf(x) === -1)
+    .reduce((acc, mod) => {
+        acc[mod] = 'commonjs ' + mod;
+        return acc;
+    }, {});
+
+nodeExternals['react-dom/server'] = 'commonjs react-dom/server';
 
 // Despite this file being located in /scripts, all paths are specified relative to the root
 function ofAppPath(relative) {
     return path.join(path.resolve(__dirname, '..'), relative);
 }
 
-const backendConfig = {
+function createConfig(overrides) {
+    const baseConfig = {
+        resolve: {
+            extensions: ['']
+        },
+        module: {
+            loaders: [
+
+            ]
+        },
+        plugins: [
+            require('progress-bar-webpack-plugin')({
+                format: '  build [:bar] :percent (:elapsed seconds)',
+                clear: false
+            }),
+
+            new webpack.optimize.OccurenceOrderPlugin()
+        ]
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+        baseConfig.devtool = 'eval';
+        baseConfig.debug = true;
+    }
+
+    const merge = DeepMerge((target, source) => {
+        return (target instanceof Array) ?
+            [].concat(target, source) :
+            source;
+    });
+
+    return merge(baseConfig, overrides || {});
+}
+
+const backendConfig = createConfig({
     resolve: {
-        extensions: ['', '.js', '.ts']
+        extensions: ['.js', '.ts', '.tsx']
     },
     entry: ofAppPath('server/server.ts'),
     module: {
         loaders: [
             { test: /\.json$/, loader: 'json-loader', exclude: globalExclude },
-            { test: /\.ts$/, loader: 'babel?presets[]=es2015!ts-loader', exclude: globalExclude },
-            { test: /\.css$/, loader: ExtractTextPlugin.extract('style', 'css'), exclude: globalExclude },
-            { test: /\.(png|gif|jpe?g|svg)$/i, loader: 'url?limit=10000', exclude: globalExclude }
+            { test: /\.tsx?$/, loader: 'babel?presets[]=es2015!ts-loader', exclude: globalExclude }
         ]
     },
-    plugins: [
-        new ExtractTextPlugin('static/bundle-[hash].css'),
-
-        require('progress-bar-webpack-plugin')({
-            format: '  build [:bar] :percent (:elapsed seconds)',
-            clear: false
-        }),
-
-        new webpack.optimize.OccurenceOrderPlugin(),
-
-        new AssetsPlugin({
-            filename: 'assets.json',
-            path: ofAppPath('build')
-        })
-    ],
     target: 'node',
     output: {
         path: ofAppPath('build'),
@@ -49,18 +74,28 @@ const backendConfig = {
         __dirname: true,
         __filename: true
     },
-    externals: fs.readdirSync(ofAppPath('node_modules'))
-        .filter(x => ['.bin'].indexOf(x) === -1)
-        .reduce((acc, mod) => {
-            acc[mod] = 'commonjs ' + mod;
-            return acc;
-        }, {})
-};
+    externals: nodeExternals
+});
 
-if (process.env.NODE_ENV !== 'production') {
-    backendConfig.devtool = '#eval-source-map';
-    backendConfig.debug = true;
-}
+const clientBundleConfig = createConfig({
+    entry: {
+        'oauth-confirm': ofAppPath('server/assets/oauth-confirm/index.js')
+    },
+    module: {
+        loaders: [
+            { test: /\.(png|gif|jpe?g|svg)$/i, loader: 'file?context=server/assets&name=[path][name].[ext]?h=[hash]', exclude: globalExclude },
+            { test: /\.css$/, loader: 'style!css', exclude: globalExclude }
+        ]
+    },
+    plugins: [
+        new HashPlugin({ path: './build', fileName: 'client-bundles-hash.txt' })
+    ],
+    output: {
+        path: ofAppPath('build/static'),
+        publicPath: './static/',
+        filename: '[name]/bundle.js'
+    }
+});
 
 const backendTestConfig = _.extend(_.cloneDeep(backendConfig), {
     entry: ofAppPath('tests/index.ts'),
@@ -71,6 +106,6 @@ const backendTestConfig = _.extend(_.cloneDeep(backendConfig), {
 });
 
 module.exports = {
-    backendConfig,
+    backendConfig: [clientBundleConfig, backendConfig],
     backendTestConfig
 };
