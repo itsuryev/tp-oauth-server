@@ -45,11 +45,9 @@ export default class OauthAuthorizePage extends React.Component<Props, {}> {
 
                         <div className="description">
                             <div className="description-item">
-                                <h3>The application will:</h3>
+                                <h3>The application will be able to:</h3>
                                 <ul className="will">
-                                    <li>Have access to your data</li>
-                                    <li>Do stuff</li>
-                                    <li>Something else</li>
+                                    <li>Read and write data on your behalf</li>
                                 </ul>
                             </div>
 
